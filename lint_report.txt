@@ -1,0 +1,72 @@
+
+> BudgetSMS@0.0.1 lint
+> eslint .
+
+
+C:\Dinesh\AI\BudgetSMS\src\navigation\AppNavigator.tsx
+  23:35  error    'route' is defined but never used. Allowed unused args must match /^_/u                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  35:37  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  42:37  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  49:37  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  56:37  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  61:32  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  63:37  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “AppNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+
+C:\Dinesh\AI\BudgetSMS\src\screens\BudgetInsightsScreen.tsx
+   7:30  warning  Inline style: { flex: 1, backgroundColor: '#f8f9fa' }                           react-native/no-inline-styles
+   8:48  warning  Inline style: { padding: 20 }                                                   react-native/no-inline-styles
+  40:34  warning  Inline style: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 }  react-native/no-inline-styles
+  41:38  warning  Inline style: { color: '#40c057', fontWeight: 'bold', marginRight: 5 }          react-native/no-inline-styles
+  42:38  warning  Inline style: { color: '#777' }                                                 react-native/no-inline-styles
+  49:55  warning  Inline style: { height: 40, backgroundColor: '#ccc' }                           react-native/no-inline-styles
+  53:55  warning  Inline style: { height: 80, backgroundColor: '#b2f2bb' }                        react-native/no-inline-styles
+
+C:\Dinesh\AI\BudgetSMS\src\screens\HomeScreen.tsx
+  222:28  warning  Inline style: { padding: 16, backgroundColor: '#fff' }                                                                                                                             react-native/no-inline-styles
+  223:26  warning  Inline style: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 }                                                                                                               react-native/no-inline-styles
+  228:30  warning  Inline style: { color: '#777' }                                                                                                                                                    react-native/no-inline-styles
+  237:32  warning  Inline style: {
+  marginBottom: 12,
+  padding: 14,
+  borderRadius: 10,
+  backgroundColor: '#fafafa',
+  borderLeftWidth: 5,
+  borderLeftColor: 'isDebit ? "#e53935" : "#2e7d32"'
+}  react-native/no-inline-styles
+  247:36  warning  Inline style: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: 'isDebit ? "#e53935" : "#2e7d32"'
+}                                                                                 react-native/no-inline-styles
+  257:36  warning  Inline style: { fontSize: 12, color: 'isDebit ? "#e53935" : "#2e7d32"' }                                                                                                           react-native/no-inline-styles
+  265:38  warning  Inline style: { marginTop: 6 }                                                                                                                                                     react-native/no-inline-styles
+  266:38  warning  Inline style: { fontSize: 12, color: '#777' }                                                                                                                                      react-native/no-inline-styles
+
+C:\Dinesh\AI\BudgetSMS\src\screens\MonthlyBudgetScreen.tsx
+  25:30  warning  Inline style: { flex: 1, backgroundColor: '#fff' }                                                                                                                                                                                                                                                                                                                                                                                react-native/no-inline-styles
+  26:48  warning  Inline style: { paddingBottom: 20 }                                                                                                                                                                                                                                                                                                                                                                                               react-native/no-inline-styles
+  42:38  warning  Inline style: { fontSize: 20 }                                                                                                                                                                                                                                                                                                                                                                                                    react-native/no-inline-styles
+  51:51  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “MonthlyBudgetScreen” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  53:50  warning  Inline style: { justifyContent: 'center', alignItems: 'center' }                                                                                                                                                                                                                                                                                                                                                                  react-native/no-inline-styles
+  54:54  warning  Inline style: { fontSize: 12, color: '#777' }                                                                                                                                                                                                                                                                                                                                                                                     react-native/no-inline-styles
+  55:54  warning  Inline style: { fontSize: 22, fontWeight: 'bold', color: '#000' }                                                                                                                                                                                                                                                                                                                                                                 react-native/no-inline-styles
+  63:38  warning  Inline style: { fontSize: 24, color: '#555' }                                                                                                                                                                                                                                                                                                                                                                                     react-native/no-inline-styles
+  73:64  warning  Inline style: { borderTopColor: "cat.color === '#e9ecef' ? '#e9ecef' : cat.color" }                                                                                                                                                                                                                                                                                                                                               react-native/no-inline-styles
+
+C:\Dinesh\AI\BudgetSMS\src\screens\MyBudgetScreen.tsx
+  18:30  warning  Inline style: { flex: 1, backgroundColor: '#fff' }            react-native/no-inline-styles
+  19:48  warning  Inline style: { paddingBottom: 20 }                           react-native/no-inline-styles
+  32:55  warning  Inline style: { backgroundColor: '#40c057' }                  react-native/no-inline-styles
+  36:55  warning  Inline style: { backgroundColor: '#fa5252' }                  react-native/no-inline-styles
+  62:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+  63:55  warning  Inline style: { backgroundColor: '#40c057' }                  react-native/no-inline-styles
+  66:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+  73:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+  74:55  warning  Inline style: { backgroundColor: '#fa5252' }                  react-native/no-inline-styles
+  77:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+  84:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+  85:55  warning  Inline style: { backgroundColor: '#333' }                     react-native/no-inline-styles
+  88:38  warning  Inline style: { flexDirection: 'row', alignItems: 'center' }  react-native/no-inline-styles
+
+✖ 44 problems (1 error, 43 warnings)
+
