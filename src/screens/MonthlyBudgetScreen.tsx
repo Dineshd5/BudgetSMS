@@ -1,31 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PieChart } from "react-native-gifted-charts";
 import { useTransactions } from "../context/TransactionContext";
 
 const MonthlyBudgetScreen = () => {
-    const { transactions } = useTransactions();
+    const { getCategoryTotals, getMonthlyTotals, loading } = useTransactions();
 
-    // Naive categorization based on merchant/mode for demo
-    const categoryTotals: Record<string, number> = {};
-    let totalExpense = 0;
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const month = selectedDate.getMonth();
+    const year = selectedDate.getFullYear();
 
-    transactions.filter(t => t.type === 'debit').forEach(t => {
-        const cat = t.mode; // Using Mode as category for now (UPI, CARD, etc)
-        categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount;
-        totalExpense += t.amount;
-    });
+    const categoryData = getCategoryTotals(month, year);
+    const { expense: totalExpense } = getMonthlyTotals(month, year);
 
-    const pieData = Object.keys(categoryTotals).map((cat, index) => ({
-        value: categoryTotals[cat],
-        color: ['#fcc419', '#f03e3e', '#339af0', '#343a40', '#22b8cf'][index % 5],
-        text: `${Math.round((categoryTotals[cat] / totalExpense) * 100)}%`
+    // Map context data to PieChart format
+    const pieData = categoryData.map(c => ({
+        value: c.amount,
+        color: c.color,
+        text: c.percentage,
     }));
+
+    const changeMonth = (direction: 'next' | 'prev') => {
+        const newDate = new Date(selectedDate);
+        newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+        setSelectedDate(newDate);
+    };
 
     // If no data, show placeholder
     if (pieData.length === 0) {
         pieData.push({ value: 100, color: '#e9ecef', text: '0%' });
+    }
+
+    if (loading) {
+        return <View style={styles.loader}><Text>Loading...</Text></View>;
     }
 
     return (
@@ -40,7 +48,17 @@ const MonthlyBudgetScreen = () => {
 
                 {/* Date Selector */}
                 <View style={styles.dateContainer}>
-                    <Text style={styles.dateText}>January 2025 ⌄</Text>
+                    <View style={styles.dateNavContainer}>
+                        <TouchableOpacity onPress={() => changeMonth('prev')}>
+                            <Text style={styles.navArrow}>{"<"}</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.dateText}>
+                            {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                        </Text>
+                        <TouchableOpacity onPress={() => changeMonth('next')}>
+                            <Text style={styles.navArrow}>{">"}</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {/* Donut Chart Section */}
@@ -59,7 +77,7 @@ const MonthlyBudgetScreen = () => {
                                 return (
                                     <View style={{ justifyContent: "center", alignItems: "center" }}>
                                         <Text style={{ fontSize: 12, color: "#777" }}>Total Spent</Text>
-                                        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#000" }}>₹{totalExpense}</Text>
+                                        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#000" }}>₹{totalExpense.toLocaleString()}</Text>
                                     </View>
                                 );
                             }}
@@ -73,21 +91,18 @@ const MonthlyBudgetScreen = () => {
 
                 {/* Grid */}
                 <View style={styles.gridContainer}>
-                    {Object.keys(categoryTotals).map((cat, index) => {
-                        const color = ['#fcc419', '#f03e3e', '#339af0', '#343a40', '#22b8cf'][index % 5];
-                        const percent = Math.round((categoryTotals[cat] / totalExpense) * 100) + "%";
+                    {categoryData.length === 0 && <Text style={styles.noDataText}>No expenses this month</Text>}
 
-                        return (
-                            <View key={index} style={styles.gridItem}>
-                                <View style={styles.miniChart}>
-                                    <View style={[styles.miniRing, { borderColor: color, borderTopColor: color }]} />
-                                    <Text style={styles.miniPercentage}>{percent}</Text>
-                                </View>
-                                <Text style={styles.categoryLabel}>{cat}</Text>
-                                <Text style={{ fontSize: 10, color: '#777' }}>₹{categoryTotals[cat]}</Text>
+                    {categoryData.map((cat, index) => (
+                        <View key={index} style={styles.gridItem}>
+                            <View style={styles.miniChart}>
+                                <View style={[styles.miniRing, { borderColor: cat.color, borderTopColor: cat.color }]} />
+                                <Text style={styles.miniPercentage}>{cat.percentage}</Text>
                             </View>
-                        );
-                    })}
+                            <Text style={styles.categoryLabel}>{cat.category}</Text>
+                            <Text style={styles.amountText}>₹{cat.amount.toLocaleString()}</Text>
+                        </View>
+                    ))}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -95,6 +110,7 @@ const MonthlyBudgetScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -163,6 +179,11 @@ const styles = StyleSheet.create({
     },
     miniPercentage: { fontSize: 12, fontWeight: "bold", color: "#000" },
     categoryLabel: { fontSize: 12, color: "#555" },
+
+    dateNavContainer: { flexDirection: 'row', alignItems: 'center' },
+    navArrow: { fontSize: 22, marginHorizontal: 10, color: '#555' },
+    noDataText: { width: '100%', textAlign: 'center', color: '#777' },
+    amountText: { fontSize: 10, color: '#777' }
 });
 
 export default MonthlyBudgetScreen;

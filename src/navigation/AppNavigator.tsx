@@ -6,6 +6,8 @@ import HomeScreen from "../screens/HomeScreen";
 import MyBudgetScreen from "../screens/MyBudgetScreen";
 import MonthlyBudgetScreen from "../screens/MonthlyBudgetScreen";
 import BudgetInsightsScreen from "../screens/BudgetInsightsScreen";
+import LedgerScreen from "../screens/LedgerScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -43,6 +45,14 @@ const AppNavigator = () => {
                     }}
                 />
                 <Tab.Screen
+                    name="Ledger"
+                    component={LedgerScreen}
+                    options={{
+                        tabBarIcon: () => <Text style={{ fontSize: 20 }}>📒</Text>,
+                        tabBarLabel: "Ledger",
+                    }}
+                />
+                <Tab.Screen
                     name="Goals"
                     component={MonthlyBudgetScreen}
                     options={{
@@ -58,7 +68,7 @@ const AppNavigator = () => {
                 />
                 <Tab.Screen
                     name="Profile"
-                    component={() => <PlaceholderScreen title="Profile" />}
+                    component={ProfileScreen}
                     options={{
                         tabBarIcon: ({ color }) => <Text style={[styles.icon, { color }]}>👤</Text>
                     }}
