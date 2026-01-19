@@ -37,7 +37,7 @@ const MonthlyBudgetScreen = () => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f7fa" }}>
             <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -116,41 +116,49 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         paddingHorizontal: 20,
-        paddingVertical: 15,
+        paddingTop: 20,
+        paddingBottom: 20,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 4,
+        marginBottom: 20,
     },
     backIcon: { fontSize: 24, color: '#333' },
-    title: { fontSize: 18, fontWeight: "600", color: '#000' },
-    settingsIcon: { fontSize: 20 },
+    title: { fontSize: 20, fontWeight: "700", color: '#1a1a1a' },
+    settingsIcon: { fontSize: 20, opacity: 0 }, // Hidden but keeps spacing
     dateContainer: { alignItems: "center", marginBottom: 30 },
-    dateText: { fontSize: 16, fontWeight: "500", color: "#555" },
+    dateText: { fontSize: 18, fontWeight: "600", color: "#333", marginHorizontal: 15 },
+    dateNavContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    navArrow: { fontSize: 22, color: '#2e7d32', paddingHorizontal: 10 },
+
     chartSection: {
         flexDirection: "row",
-        justifyContent: "space-around",
+        justifyContent: "center",
         alignItems: "center",
         marginBottom: 40,
         paddingHorizontal: 10,
     },
     chartWrapper: { alignItems: "center", justifyContent: "center" },
-    iconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#eee",
-    },
-    addButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#eee",
-    },
+    iconButton: { display: 'none' }, // Hiding extra buttons for cleaner look
+    addButton: { display: 'none' },
+
     gridContainer: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -158,16 +166,24 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     gridItem: {
-        width: "30%",
+        width: "48%", // 2 columns
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 16,
         alignItems: "center",
-        marginBottom: 25,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 2,
     },
     miniChart: {
         width: 50,
         height: 50,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 8,
+        marginBottom: 12,
     },
     miniRing: {
         position: "absolute",
@@ -177,13 +193,11 @@ const styles = StyleSheet.create({
         borderWidth: 4,
         opacity: 0.8,
     },
-    miniPercentage: { fontSize: 12, fontWeight: "bold", color: "#000" },
-    categoryLabel: { fontSize: 12, color: "#555" },
+    miniPercentage: { fontSize: 12, fontWeight: "bold", color: "#333" },
+    categoryLabel: { fontSize: 14, fontWeight: '600', color: "#555", marginBottom: 4 },
+    amountText: { fontSize: 16, fontWeight: 'bold', color: '#333' },
 
-    dateNavContainer: { flexDirection: 'row', alignItems: 'center' },
-    navArrow: { fontSize: 22, marginHorizontal: 10, color: '#555' },
-    noDataText: { width: '100%', textAlign: 'center', color: '#777' },
-    amountText: { fontSize: 10, color: '#777' }
+    noDataText: { width: '100%', textAlign: 'center', color: '#999', marginTop: 20 },
 });
 
 export default MonthlyBudgetScreen;

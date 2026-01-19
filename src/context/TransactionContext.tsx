@@ -40,6 +40,8 @@ interface TransactionContextType {
     clearTransactions: () => Promise<void>;
     refreshTransactions: () => Promise<void>;
     updateContactName: (id: string, name: string) => Promise<void>;
+    requestSmsPermission: () => Promise<void>;
+    isSmsPermissionGranted: boolean;
 
     // Derived Data Getters
     getTransactionsByMonth: (month: number, year: number) => Transaction[];
@@ -58,6 +60,16 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     const [contacts, setContacts] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [budget, setBudget] = useState(50000); // Default budget
+    const [isSmsPermissionGranted, setIsSmsPermissionGranted] = useState(false);
+
+    const checkPermissionStatus = useCallback(async () => {
+        if (Platform.OS === 'android') {
+            const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS);
+            setIsSmsPermissionGranted(granted);
+            return granted;
+        }
+        return false;
+    }, []);
 
     const updateBudget = useCallback((newBudget: number) => {
         setBudget(newBudget);
@@ -67,17 +79,11 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
         if (!silent) setLoading(true);
         await initDB();
 
-        // Check perm
-        if (Platform.OS === 'android') {
-            const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS);
-            if (!granted) {
-                const req = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS);
-                if (req === PermissionsAndroid.RESULTS.GRANTED) {
-                    await readSmsAndSync();
-                }
-            } else {
-                await readSmsAndSync();
-            }
+        // Check permission status but DO NOT REQUEST IT
+        const hasPermission = await checkPermissionStatus();
+
+        if (hasPermission) {
+            await readSmsAndSync();
         }
 
         const dbTx = await getAllTransactions();
@@ -100,7 +106,25 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
         setContacts(loadedContacts);
 
         if (!silent) setLoading(false);
-    }, []);
+    }, [checkPermissionStatus]);
+
+    const requestSmsPermission = useCallback(async () => {
+        if (Platform.OS === 'android') {
+            try {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.READ_SMS
+                );
+                if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                    setIsSmsPermissionGranted(true);
+                    await refreshTransactionsInternal(false);
+                } else {
+                    setIsSmsPermissionGranted(false);
+                }
+            } catch (err) {
+                console.warn(err);
+            }
+        }
+    }, [refreshTransactionsInternal]);
 
     // --- Actions ---
     const addTransaction = useCallback(async (tx: Omit<Transaction, "id" | "status">) => {
@@ -375,8 +399,10 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
         getDailyBreakdown,
         getMonthlyTotals,
         getCategoryTotals,
-        getPersonLedger
-    }), [transactions, loading, budget, updateBudget, addTransaction, editTransaction, removeTransaction, approveTransaction, ignoreTransaction, clearTransactions, refreshTransactionsInternal, updateContactName, getTransactionsByMonth, getWeeklySummary, getDailyBreakdown, getMonthlyTotals, getCategoryTotals, getPersonLedger]);
+        getPersonLedger,
+        requestSmsPermission,
+        isSmsPermissionGranted
+    }), [transactions, loading, budget, updateBudget, addTransaction, editTransaction, removeTransaction, approveTransaction, ignoreTransaction, clearTransactions, refreshTransactionsInternal, updateContactName, getTransactionsByMonth, getWeeklySummary, getDailyBreakdown, getMonthlyTotals, getCategoryTotals, getPersonLedger, requestSmsPermission, isSmsPermissionGranted]);
 
     return (
         <TransactionContext.Provider value={value}>

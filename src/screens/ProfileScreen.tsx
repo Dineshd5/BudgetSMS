@@ -109,6 +109,17 @@ const ProfileScreen = () => {
                         <Text style={styles.chevron}>›</Text>
                     </TouchableOpacity>
 
+                    <TouchableOpacity style={styles.row} onPress={() => {
+                        // In a real app, use Linking.openURL with your hosted policy
+                        Alert.alert("Privacy Policy", "This app processes all SMS data locally. No data is uploaded to any server. \n\nFull policy: https://pages.github.io/budget-sms/privacy");
+                    }}>
+                        <View style={styles.rowLeft}>
+                            <Text style={styles.icon}>🔒</Text>
+                            <Text style={styles.rowText}>Privacy Policy</Text>
+                        </View>
+                        <Text style={styles.chevron}>›</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity style={styles.row} onPress={handleExportData}>
                         <View style={styles.rowLeft}>
                             <Text style={styles.icon}>📤</Text>
@@ -134,38 +145,44 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f8f9fa' },
+    container: { flex: 1, backgroundColor: '#f5f7fa' },
     content: { padding: 20 },
     header: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
     avatar: {
-        width: 80, height: 80, borderRadius: 40, backgroundColor: '#e9ecef',
-        justifyContent: 'center', alignItems: 'center', marginBottom: 10
+        width: 100, height: 100, borderRadius: 50, backgroundColor: '#dfe6e9',
+        justifyContent: 'center', alignItems: 'center', marginBottom: 15,
+        shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
     },
-    avatarText: { fontSize: 40 },
-    name: { fontSize: 24, fontWeight: 'bold', color: '#333' },
-    subtitle: { fontSize: 14, color: '#777' },
+    avatarText: { fontSize: 50 },
+    name: { fontSize: 28, fontWeight: 'bold', color: '#2d3436' },
+    subtitle: { fontSize: 15, color: '#636e72', marginTop: 4 },
+
     card: {
-        backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 25,
-        alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5
+        backgroundColor: '#fff', padding: 24, borderRadius: 20, marginBottom: 25,
+        alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8
     },
-    cardLabel: { fontSize: 14, color: '#777', marginBottom: 5 },
-    cardValue: { fontSize: 32, fontWeight: 'bold', color: '#2e7d32' },
-    section: { marginBottom: 25 },
-    sectionTitle: { fontSize: 16, fontWeight: '600', color: '#555', marginBottom: 10, marginLeft: 5 },
+    cardLabel: { fontSize: 14, color: '#888', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
+    cardValue: { fontSize: 36, fontWeight: 'bold', color: '#2e7d32' },
+
+    section: { marginBottom: 30 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d3436', marginBottom: 15, marginLeft: 5 },
+
     row: {
-        backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 10,
-        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
+        backgroundColor: '#fff', padding: 18, borderRadius: 16, marginBottom: 12,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1
     },
     rowLeft: { flexDirection: 'row', alignItems: 'center' },
-    icon: { marginRight: 15, fontSize: 18 },
-    rowText: { fontSize: 16, color: '#333' },
-    chevron: { fontSize: 20, color: '#ccc' },
+    icon: { marginRight: 16, fontSize: 20 },
+    rowText: { fontSize: 16, fontWeight: '500', color: '#2d3436' },
+    chevron: { fontSize: 20, color: '#b2bec3' },
+
     dangerRow: {
-        backgroundColor: '#fff0f0', padding: 16, borderRadius: 12, marginBottom: 10,
+        backgroundColor: '#fff5f5', padding: 18, borderRadius: 16, marginBottom: 12,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         borderWidth: 1, borderColor: '#ffc9c9'
     },
-    dangerText: { fontSize: 16, color: '#e03131', fontWeight: '500' }
+    dangerText: { fontSize: 16, color: '#e03131', fontWeight: '600' }
 });
 
 export default ProfileScreen;

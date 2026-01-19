@@ -1,12 +1,17 @@
-import { View, Text, ScrollView, StyleSheet, StatusBar, TouchableOpacity, Alert, RefreshControl, TextInput } from "react-native";
+import { View, Text, ScrollView, StyleSheet, StatusBar, TouchableOpacity, Alert, RefreshControl, TextInput, Platform, Dimensions } from "react-native";
 import { useTransactions, Transaction } from "../context/TransactionContext";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddTransactionModal from "../components/AddTransactionModal";
+import PermissionDisclosureModal from "../components/PermissionDisclosureModal";
+import { PieChart } from "react-native-gifted-charts";
+
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-    const { transactions, loading, removeTransaction, refreshTransactions } = useTransactions();
+    const { transactions, loading, removeTransaction, refreshTransactions, requestSmsPermission, isSmsPermissionGranted } = useTransactions();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isPendingModalVisible, setIsPendingModalVisible] = useState(false);
+    const [isPermissionModalVisible, setIsPermissionModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -49,6 +54,11 @@ export default function HomeScreen() {
         setSelectedTransaction(null);
     };
 
+    const handlePermissionAccept = async () => {
+        setIsPermissionModalVisible(false);
+        await requestSmsPermission();
+    };
+
     if (loading) {
         return (
             <View style={styles.loader}>
@@ -60,6 +70,23 @@ export default function HomeScreen() {
     // Filter for approved items only for the main list
     const approvedTransactions = transactions.filter(t => t.status === 'approved');
     const pendingTransactions = transactions.filter(t => t.status === 'pending');
+
+    // Dashboard Calculations
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonthTx = approvedTransactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const income = currentMonthTx.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
+    const expense = currentMonthTx.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0);
+    const balance = income - expense;
+
+    const pieData = [
+        { value: income === 0 && expense === 0 ? 1 : income, color: '#4caf50', text: 'Income' },
+        { value: expense, color: '#e53935', text: 'Expense' },
+    ];
 
     // Sort by date desc
     const sortedTransactions = [...approvedTransactions].sort((a, b) =>
@@ -82,24 +109,62 @@ export default function HomeScreen() {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2e7d32']} />
                 }
+                contentContainerStyle={{ paddingBottom: 80 }}
             >
-                <Text style={styles.headerTitle}>
-                    My Dashboard
-                </Text>
+                <StatusBar barStyle="dark-content" backgroundColor="#f5f7fa" />
+                <View style={styles.headerContainer}>
+                    <Text style={styles.headerTitle}>Overview</Text>
+                    <Text style={styles.headerDate}>{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
+                </View>
 
-                {/* Dashboard Summary */}
-                <View style={styles.dashboardContainer}>
-                    <View style={[styles.dashboardCard, { backgroundColor: '#e8f5e9' }]}>
-                        <Text style={styles.dashboardLabel}>Income</Text>
-                        <Text style={[styles.dashboardValue, { color: '#2e7d32' }]}>
-                            ₹{approvedTransactions.filter(t => t.type === 'credit' && new Date(t.date).getMonth() === new Date().getMonth()).reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-                        </Text>
+                {/* Permission Banner */}
+                {!isSmsPermissionGranted && Platform.OS === 'android' && (
+                    <TouchableOpacity
+                        style={styles.permissionBanner}
+                        onPress={() => setIsPermissionModalVisible(true)}
+                    >
+                        <View style={styles.bannerIcon}>
+                            <Text style={{ fontSize: 24 }}>✨</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.bannerTitle}>Enable Auto-Tracking</Text>
+                            <Text style={styles.bannerSubtitle}>Sync from SMS automatically.</Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
+
+                {/* Rich Dashboard Chart */}
+                <View style={styles.chartCard}>
+                    <View style={styles.chartContainer}>
+                        <PieChart
+                            data={pieData}
+                            donut
+                            radius={80}
+                            innerRadius={60}
+                            centerLabelComponent={() => {
+                                return (
+                                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                        <Text style={{ fontSize: 12, color: '#777' }}>Balance</Text>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: balance >= 0 ? '#2e7d32' : '#c62828' }}>
+                                            ₹{balance.toLocaleString()}
+                                        </Text>
+                                    </View>
+                                );
+                            }}
+                        />
                     </View>
-                    <View style={[styles.dashboardCard, { backgroundColor: '#ffebee' }]}>
-                        <Text style={styles.dashboardLabel}>Expense</Text>
-                        <Text style={[styles.dashboardValue, { color: '#c62828' }]}>
-                            ₹{approvedTransactions.filter(t => t.type === 'debit' && new Date(t.date).getMonth() === new Date().getMonth()).reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-                        </Text>
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statItem}>
+                            <View style={[styles.dot, { backgroundColor: '#4caf50' }]} />
+                            <Text style={styles.statLabel}>Income</Text>
+                            <Text style={styles.statValue}>₹{income.toLocaleString()}</Text>
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.statItem}>
+                            <View style={[styles.dot, { backgroundColor: '#e53935' }]} />
+                            <Text style={styles.statLabel}>Expense</Text>
+                            <Text style={styles.statValue}>₹{expense.toLocaleString()}</Text>
+                        </View>
                     </View>
                 </View>
 
@@ -185,6 +250,13 @@ export default function HomeScreen() {
                 />
             )}
 
+            {/* Permission Disclosure Modal */}
+            <PermissionDisclosureModal
+                visible={isPermissionModalVisible}
+                onDismiss={() => setIsPermissionModalVisible(false)}
+                onAccept={handlePermissionAccept}
+            />
+
             {/* FAB */}
             <TouchableOpacity
                 style={styles.fab}
@@ -207,115 +279,192 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    container: { padding: 16, backgroundColor: "#fff" },
-    headerTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 16, marginTop: 16, color: "#333" },
-    noTransactions: { color: "#777" },
+    container: { padding: 16, backgroundColor: "#f5f7fa", flex: 1 },
+    headerContainer: { marginBottom: 20, marginTop: 10 },
+    headerTitle: { fontSize: 28, fontWeight: "bold", color: "#1a1a1a" },
+    headerDate: { fontSize: 14, color: "#666", marginTop: 2 },
+
+    // Chart Card
+    chartCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 25,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
+        alignItems: 'center',
+    },
+    chartContainer: {
+        marginBottom: 20,
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    statItem: { alignItems: 'center' },
+    statLabel: { fontSize: 13, color: '#888', marginTop: 4, fontWeight: '500' },
+    statValue: { fontSize: 16, fontWeight: 'bold', color: '#333', marginTop: 2 },
+    dot: { width: 8, height: 8, borderRadius: 4 },
+    divider: { height: 30, width: 1, backgroundColor: '#eee' },
+
+    noTransactions: { color: "#777", textAlign: 'center', marginTop: 20 },
+
+    // Transaction Card
     card: {
         marginBottom: 12,
-        padding: 14,
-        borderRadius: 10,
-        backgroundColor: "#fafafa",
-        borderLeftWidth: 5,
+        padding: 16,
+        borderRadius: 16,
+        backgroundColor: "#fff",
+        borderLeftWidth: 4,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+        elevation: 1,
     },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center'
     },
-    amount: { fontSize: 20, fontWeight: "bold" },
-    date: { fontSize: 12, color: "#777" },
-    type: { fontSize: 12 },
-    source: { marginTop: 6, fontWeight: '500' },
-    category: { fontSize: 12, color: "#777" },
+    amount: { fontSize: 18, fontWeight: "bold" },
+    date: { fontSize: 12, color: "#999", marginTop: 4 },
+    type: { fontSize: 10, fontWeight: 'bold', marginBottom: 2 },
+    source: { marginTop: 4, fontWeight: '600', fontSize: 15, color: '#333' },
+    category: { fontSize: 12, color: "#888", marginTop: 2 },
+
     fab: {
         position: 'absolute',
-        width: 56,
-        height: 56,
+        width: 60,
+        height: 60,
         alignItems: 'center',
         justifyContent: 'center',
-        right: 20,
-        bottom: 20,
+        right: 25,
+        bottom: 25,
         backgroundColor: '#2e7d32',
-        borderRadius: 28,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        borderRadius: 30,
+        elevation: 10,
+        shadowColor: '#2e7d32',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
     },
-    fabText: { color: "#fff", fontSize: 30, marginTop: -2 },
+    fabText: { color: "#fff", fontSize: 32, marginTop: -4 },
 
-    searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, marginHorizontal: 20, marginBottom: 15, paddingHorizontal: 15, height: 45, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+
+    searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 12, marginBottom: 20, paddingHorizontal: 15, height: 50 },
     searchInput: { flex: 1, fontSize: 16, color: '#333' },
     clearBtn: { padding: 5 },
     clearBtnText: { fontSize: 16, color: '#999' },
-    list: {},
+    list: { paddingBottom: 20 },
     dashboardContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 25,
     },
     dashboardCard: {
         flex: 1,
-        padding: 15,
-        borderRadius: 12,
-        marginHorizontal: 5,
+        padding: 16,
+        borderRadius: 16,
+        marginHorizontal: 6,
         alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
+        justifyContent: 'center',
         elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
     },
     dashboardLabel: {
-        fontSize: 14,
-        color: '#555',
-        marginBottom: 5,
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 4,
         textTransform: 'uppercase',
         fontWeight: 'bold',
+        letterSpacing: 0.5,
     },
     dashboardValue: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
-        marginBottom: 10,
-        marginLeft: 5,
+        marginBottom: 15,
+        marginLeft: 4,
     },
+
+    // Permission Banner
+    permissionBanner: {
+        backgroundColor: '#e8f5e9',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 25,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#c8e6c9',
+    },
+    bannerIcon: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    bannerTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+        marginBottom: 4,
+    },
+    bannerSubtitle: {
+        fontSize: 13,
+        color: '#555',
+        lineHeight: 18,
+    },
+
     pendingCard: {
         backgroundColor: '#e3f2fd',
-        padding: 15,
-        borderRadius: 12,
-        marginBottom: 20,
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 25,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#bbdefb',
     },
-    pendingTitle: { fontSize: 16, fontWeight: 'bold', color: '#0d47a1' },
-    pendingSubtitle: { fontSize: 12, color: '#1976d2' },
-    reviewBtn: { backgroundColor: '#1976d2', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20 },
-    reviewBtnText: { color: '#fff', fontWeight: 'bold' },
+    pendingTitle: { fontSize: 16, fontWeight: 'bold', color: '#1565c0' },
+    pendingSubtitle: { fontSize: 12, color: '#1976d2', marginTop: 2 },
+    reviewBtn: { backgroundColor: '#1976d2', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 25, elevation: 2 },
+    reviewBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
 
     // Modal Styles
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center' },
-    modalContent: { backgroundColor: '#fff', margin: 20, borderRadius: 12, padding: 20, maxHeight: '80%' },
-    modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 15, textAlign: 'center', color: '#333' },
+    modalContent: { backgroundColor: '#fff', margin: 20, borderRadius: 16, padding: 24, maxHeight: '80%', elevation: 5 },
+    modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },
     pendingItem: {
         backgroundColor: '#f8f9fa',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 10,
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#eee',
     },
     actions: { flexDirection: 'row' },
-    actionBtn: { padding: 10, borderRadius: 20, marginLeft: 10, width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+    actionBtn: { padding: 0, borderRadius: 20, marginLeft: 12, width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
 });
 
 const PendingReviewModal = ({ visible, onClose, transactions }: { visible: boolean, onClose: () => void, transactions: Transaction[] }) => {

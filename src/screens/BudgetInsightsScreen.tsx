@@ -53,7 +53,7 @@ const BudgetInsightsScreen = () => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f7fa" }}>
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -197,56 +197,62 @@ const BudgetInsightsScreen = () => {
 const styles = StyleSheet.create({
     loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     scrollViewContent: { padding: 20, paddingBottom: 100 },
-    header: { alignItems: "center", marginBottom: 30 },
-    title: { fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#000" },
+    header: { alignItems: "center", marginBottom: 25 },
+    title: { fontSize: 28, fontWeight: "bold", marginBottom: 15, color: "#1a1a1a" },
     dateSelector: {
         backgroundColor: "#fff",
         paddingHorizontal: 15,
-        paddingVertical: 8,
-        borderRadius: 20,
+        paddingVertical: 10,
+        borderRadius: 25,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    dateText: { fontSize: 14, color: "#555" },
+    dateText: { fontSize: 15, fontWeight: '600', color: "#333", marginHorizontal: 10 },
 
     card: {
         backgroundColor: "#fff",
-        borderRadius: 20,
-        padding: 20,
+        borderRadius: 24,
+        padding: 24,
         marginBottom: 20,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
+        shadowRadius: 8,
+        elevation: 3,
     },
-    cardHeader: { flexDirection: "row", marginBottom: 15, justifyContent: 'space-between', alignItems: 'center' },
-    cardTitle: { fontSize: 18, fontWeight: "bold", color: "#333" },
-    budgetLabel: { fontSize: 14, color: "#666", marginBottom: 15, textAlign: 'center' },
-    budgetValue: { fontWeight: 'bold', color: '#333' },
+    cardHeader: { flexDirection: "row", marginBottom: 20, justifyContent: 'space-between', alignItems: 'center' },
+    cardTitle: { fontSize: 18, fontWeight: "bold", color: "#1a1a1a" },
+    budgetLabel: { fontSize: 14, color: "#888", marginBottom: 15, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 },
+    budgetValue: { fontWeight: 'bold', color: '#333', fontSize: 16 },
 
-    editBtnContainer: { padding: 5, backgroundColor: '#e3f2fd', borderRadius: 8 },
-    editBtn: { color: '#1976d2', fontSize: 12, fontWeight: '600' },
+    editBtnContainer: { padding: 8, backgroundColor: '#f0f9ff', borderRadius: 12 },
+    editBtn: { color: '#0077b6', fontSize: 12, fontWeight: '700' },
 
-    statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#f1f3f5' },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, paddingVertical: 15, borderTopWidth: 1, borderTopColor: '#f5f5f5' },
     statItem: { flex: 1, alignItems: 'center' },
-    statBorder: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#f1f3f5' },
-    statLabel: { fontSize: 12, color: '#868e96', marginBottom: 4 },
-    statValue: { fontSize: 16, fontWeight: 'bold' },
+    statBorder: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#f5f5f5' },
+    statLabel: { fontSize: 12, color: '#999', marginBottom: 6, fontWeight: '500' },
+    statValue: { fontSize: 17, fontWeight: 'bold' },
 
     highlightBox: {
         backgroundColor: "#f4fce3",
-        borderRadius: 12,
-        padding: 15,
+        borderRadius: 16,
+        padding: 16,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: 15
     },
     calendarIcon: { fontSize: 24, marginRight: 15 },
-    highlightAmount: { fontSize: 20, fontWeight: "bold", color: "#2f9e44" },
-    highlightLabel: { fontSize: 12, color: "#555" },
+    highlightAmount: { fontSize: 22, fontWeight: "bold", color: "#2f9e44" },
+    highlightLabel: { fontSize: 13, color: "#555", marginTop: 2 },
 
-    expenseAmount: { fontSize: 32, fontWeight: "bold", color: "#000", marginBottom: 5 },
+    expenseAmount: { fontSize: 40, fontWeight: "bold", color: "#1a1a1a", marginBottom: 8, textAlign: 'center' },
 
     trendRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
     trendValue: { color: "#40c057", fontWeight: "bold", marginRight: 5 },
@@ -264,23 +270,23 @@ const styles = StyleSheet.create({
     bar: { width: 60, borderRadius: 8, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-    modalContent: { backgroundColor: '#fff', width: '80%', padding: 20, borderRadius: 10 },
-    modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15 },
-    input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 10, marginBottom: 20, fontSize: 16 },
-    modalButtons: { flexDirection: 'row', justifyContent: 'flex-end' },
-    cancelBtn: { padding: 10, marginRight: 10 },
-    cancelText: { color: '#555' },
-    saveBtn: { backgroundColor: '#2e7d32', padding: 10, borderRadius: 5 },
+    modalContent: { backgroundColor: '#fff', width: '85%', padding: 24, borderRadius: 20, elevation: 10 },
+    modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, color: '#333', textAlign: 'center' },
+    input: { borderWidth: 1, borderColor: '#eee', borderRadius: 12, padding: 14, marginBottom: 24, fontSize: 18, backgroundColor: '#f9f9f9', textAlign: 'center', fontWeight: 'bold', color: '#333' },
+    modalButtons: { flexDirection: 'row', justifyContent: 'space-between' },
+    cancelBtn: { flex: 1, padding: 14, marginRight: 10, backgroundColor: '#f0f0f0', borderRadius: 12, alignItems: 'center' },
+    cancelText: { color: '#666', fontWeight: 'bold' },
+    saveBtn: { flex: 1, backgroundColor: '#2e7d32', padding: 14, borderRadius: 12, alignItems: 'center' },
     saveText: { color: '#fff', fontWeight: 'bold' },
 
     navBtn: { paddingHorizontal: 15, paddingVertical: 5 },
     navArrow: { fontSize: 18, fontWeight: 'bold', color: '#555' },
 
-    legendContainer: { marginTop: 10 },
-    legendItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, alignItems: 'center' },
-    dot: { width: 12, height: 12, borderRadius: 6, marginRight: 10 },
-    legendText: { fontSize: 14, color: '#333' },
-    legendAmount: { fontSize: 14, fontWeight: 'bold', color: '#555' }
+    legendContainer: { marginTop: 20, paddingHorizontal: 10 },
+    legendItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f9f9f9' },
+    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
+    legendText: { fontSize: 15, color: '#444', fontWeight: '500' },
+    legendAmount: { fontSize: 15, fontWeight: 'bold', color: '#333' }
 });
 
 export default BudgetInsightsScreen;
