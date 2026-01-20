@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PieChart } from "react-native-gifted-charts";
 import { useTransactions } from "../context/TransactionContext";
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "../components/Icons";
 
 const BudgetInsightsScreen = () => {
     const { getMonthlyTotals, getCategoryTotals, loading, budget, updateBudget } = useTransactions();
@@ -60,13 +61,13 @@ const BudgetInsightsScreen = () => {
                     <Text style={styles.title}>Budget Insights</Text>
                     <View style={styles.dateSelector}>
                         <TouchableOpacity onPress={() => changeMonth('prev')} style={styles.navBtn}>
-                            <Text style={styles.navArrow}>{"<"}</Text>
+                            <ChevronLeft color="#555" width={24} height={24} />
                         </TouchableOpacity>
                         <Text style={styles.dateText}>
                             📅 {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                         </Text>
                         <TouchableOpacity onPress={() => changeMonth('next')} style={styles.navBtn}>
-                            <Text style={styles.navArrow}>{">"}</Text>
+                            <ChevronRight color="#555" width={24} height={24} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -280,7 +281,6 @@ const styles = StyleSheet.create({
     saveText: { color: '#fff', fontWeight: 'bold' },
 
     navBtn: { paddingHorizontal: 15, paddingVertical: 5 },
-    navArrow: { fontSize: 18, fontWeight: 'bold', color: '#555' },
 
     legendContainer: { marginTop: 20, paddingHorizontal: 10 },
     legendItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f9f9f9' },

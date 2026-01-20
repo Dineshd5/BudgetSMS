@@ -146,43 +146,43 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f7fa' },
-    content: { padding: 20 },
-    header: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
+    content: { padding: 16 }, // Reduced from 20
+    header: { alignItems: 'center', marginBottom: 20, marginTop: 10 }, // Reduced margin
     avatar: {
-        width: 100, height: 100, borderRadius: 50, backgroundColor: '#dfe6e9',
-        justifyContent: 'center', alignItems: 'center', marginBottom: 15,
+        width: 70, height: 70, borderRadius: 35, backgroundColor: '#dfe6e9', // Reduced size
+        justifyContent: 'center', alignItems: 'center', marginBottom: 10,
         shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
     },
-    avatarText: { fontSize: 50 },
-    name: { fontSize: 28, fontWeight: 'bold', color: '#2d3436' },
-    subtitle: { fontSize: 15, color: '#636e72', marginTop: 4 },
+    avatarText: { fontSize: 30 }, // Reduced font size
+    name: { fontSize: 22, fontWeight: 'bold', color: '#2d3436' }, // Reduced font size
+    subtitle: { fontSize: 13, color: '#636e72', marginTop: 2 },
 
     card: {
-        backgroundColor: '#fff', padding: 24, borderRadius: 20, marginBottom: 25,
+        backgroundColor: '#fff', padding: 16, borderRadius: 16, marginBottom: 20, // Reduced padding & margin
         alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8
     },
-    cardLabel: { fontSize: 14, color: '#888', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
-    cardValue: { fontSize: 36, fontWeight: 'bold', color: '#2e7d32' },
+    cardLabel: { fontSize: 12, color: '#888', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 },
+    cardValue: { fontSize: 28, fontWeight: 'bold', color: '#2e7d32' }, // Reduced font size
 
-    section: { marginBottom: 30 },
-    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d3436', marginBottom: 15, marginLeft: 5 },
+    section: { marginBottom: 20 }, // Reduced margin
+    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#2d3436', marginBottom: 10, marginLeft: 5 }, // Reduced font size & margin
 
     row: {
-        backgroundColor: '#fff', padding: 18, borderRadius: 16, marginBottom: 12,
+        backgroundColor: '#fff', padding: 14, borderRadius: 12, marginBottom: 8, // Reduced padding & margin
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1
     },
     rowLeft: { flexDirection: 'row', alignItems: 'center' },
-    icon: { marginRight: 16, fontSize: 20 },
-    rowText: { fontSize: 16, fontWeight: '500', color: '#2d3436' },
-    chevron: { fontSize: 20, color: '#b2bec3' },
+    icon: { marginRight: 12, fontSize: 18 }, // Reduced margin & size
+    rowText: { fontSize: 15, fontWeight: '500', color: '#2d3436' }, // Slight reduction
+    chevron: { fontSize: 18, color: '#b2bec3' },
 
     dangerRow: {
-        backgroundColor: '#fff5f5', padding: 18, borderRadius: 16, marginBottom: 12,
+        backgroundColor: '#fff5f5', padding: 14, borderRadius: 12, marginBottom: 8, // Match row style
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         borderWidth: 1, borderColor: '#ffc9c9'
     },
-    dangerText: { fontSize: 16, color: '#e03131', fontWeight: '600' }
+    dangerText: { fontSize: 15, color: '#e03131', fontWeight: '600' }
 });
 
 export default ProfileScreen;

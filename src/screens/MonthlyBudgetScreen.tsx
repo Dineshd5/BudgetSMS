@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PieChart } from "react-native-gifted-charts";
+import { ChevronLeft, ChevronRight } from "../components/Icons";
 import { useTransactions } from "../context/TransactionContext";
 
 const MonthlyBudgetScreen = () => {
@@ -41,7 +42,7 @@ const MonthlyBudgetScreen = () => {
             <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={styles.backIcon}>{"<"}</Text>
+                    <ChevronLeft color="#333" width={24} height={24} />
                     <Text style={styles.title}>Monthly Budget</Text>
                     <Text style={styles.settingsIcon}>⚙️</Text>
                 </View>
@@ -49,14 +50,14 @@ const MonthlyBudgetScreen = () => {
                 {/* Date Selector */}
                 <View style={styles.dateContainer}>
                     <View style={styles.dateNavContainer}>
-                        <TouchableOpacity onPress={() => changeMonth('prev')}>
-                            <Text style={styles.navArrow}>{"<"}</Text>
+                        <TouchableOpacity onPress={() => changeMonth('prev')} style={{ paddingHorizontal: 10 }}>
+                            <ChevronLeft color="#2e7d32" width={22} height={22} />
                         </TouchableOpacity>
                         <Text style={styles.dateText}>
                             {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                         </Text>
-                        <TouchableOpacity onPress={() => changeMonth('next')}>
-                            <Text style={styles.navArrow}>{">"}</Text>
+                        <TouchableOpacity onPress={() => changeMonth('next')} style={{ paddingHorizontal: 10 }}>
+                            <ChevronRight color="#2e7d32" width={22} height={22} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
         elevation: 4,
         marginBottom: 20,
     },
-    backIcon: { fontSize: 24, color: '#333' },
+    // backIcon: { fontSize: 24, color: '#333' }, // Removed as replaced by SVG
     title: { fontSize: 20, fontWeight: "700", color: '#1a1a1a' },
     settingsIcon: { fontSize: 20, opacity: 0 }, // Hidden but keeps spacing
     dateContainer: { alignItems: "center", marginBottom: 30 },

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, FlatList } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BarChart } from "react-native-gifted-charts";
 import { useTransactions } from "../context/TransactionContext";
+import { ChevronLeft, ChevronRight } from "../components/Icons";
 
 import { useNavigation } from "@react-navigation/native";
 
@@ -81,8 +82,8 @@ const MyBudgetScreen = () => {
             <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Text style={styles.backIcon}>{"<"}</Text>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 5 }}>
+                        <ChevronLeft color="#333" width={24} height={24} />
                     </TouchableOpacity>
                     <Text style={styles.title}>My Budget</Text>
                     <Text style={styles.editIcon}>✎</Text>
@@ -91,14 +92,14 @@ const MyBudgetScreen = () => {
                 {/* Date Selector */}
                 <View style={styles.dateSelector}>
                     <View style={styles.dateNavContainer}>
-                        <TouchableOpacity onPress={() => changeMonth('prev')}>
-                            <Text style={styles.navArrow}>{"<"}</Text>
+                        <TouchableOpacity onPress={() => changeMonth('prev')} style={{ paddingHorizontal: 10 }}>
+                            <ChevronLeft color="#000" width={22} height={22} />
                         </TouchableOpacity>
                         <Text style={styles.dateText}>
                             {selectedDate.toLocaleString('default', { month: 'short', year: 'numeric' })}
                         </Text>
-                        <TouchableOpacity onPress={() => changeMonth('next')}>
-                            <Text style={styles.navArrow}>{">"}</Text>
+                        <TouchableOpacity onPress={() => changeMonth('next')} style={{ paddingHorizontal: 10 }}>
+                            <ChevronRight color="#000" width={22} height={22} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.legendContainer}>
@@ -133,7 +134,7 @@ const MyBudgetScreen = () => {
                                     </View>
                                 );
                             }}
-                            width={340}
+                            width={Math.max(340, dailyData.length * 30)} // Dynamic width: 30px per day
                         />
                     </ScrollView>
                 </View>

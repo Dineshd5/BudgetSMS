@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Pressable, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
 import { useTransactions } from '../context/TransactionContext';
+import { ChevronRight } from '../components/Icons';
 
 const LedgerScreen = () => {
     const { getPersonLedger, loading, updateContactName } = useTransactions();
@@ -12,10 +14,23 @@ const LedgerScreen = () => {
     // Fetch ledger data
     const ledgerData = useMemo(() => getPersonLedger(), [getPersonLedger]);
 
+    const getAvatarGradient = (name: string) => {
+        const charCode = name.charCodeAt(0) || 0;
+        const gradients = [
+            ['#4facfe', '#00f2fe'], // Blue
+            ['#43e97b', '#38f9d7'], // Green
+            ['#fa709a', '#fee140'], // Pink/Yellow
+            ['#667eea', '#764ba2'], // Purple
+            ['#ff9a9e', '#fecfef'], // Light Pink
+            ['#f093fb', '#f5576c'], // Pink/Red
+        ];
+        return gradients[charCode % gradients.length];
+    };
+
     if (loading) {
         return (
             <View style={styles.loader}>
-                <Text>Loading Ledger...</Text>
+                <Text style={{ color: '#888' }}>Loading Ledger...</Text>
             </View>
         );
     }
@@ -40,51 +55,70 @@ const LedgerScreen = () => {
 
     const renderItem = ({ item }: { item: { id: string; name: string; totalReceived: number; totalSent: number; lastDate: string } }) => {
         const initials = (item.name || item.id).substring(0, 2).toUpperCase();
+        const gradientColors = getAvatarGradient(item.name || item.id);
 
         return (
             <View style={styles.card}>
-                <View style={styles.avatarContainer}>
+                <LinearGradient colors={gradientColors} style={styles.avatarContainer}>
                     <Text style={styles.avatarText}>{initials}</Text>
-                </View>
+                </LinearGradient>
+
                 <View style={styles.infoContainer}>
                     <View style={styles.nameRow}>
-                        <Pressable
-                            onPress={() => handleEditPress(item)}
-                            style={({ pressed }) => [
-                                styles.editButton,
-                                { opacity: pressed ? 0.7 : 1 }
-                            ]}
-                            hitSlop={15}
-                        >
-                            <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-                            <Text style={styles.editIcon}>✏️</Text>
-                        </Pressable>
+                        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
                     </View>
+
                     {item.name !== item.id && <Text style={styles.subId}>{item.id}</Text>}
-                    <Text style={styles.date}>Last: {new Date(item.lastDate).toLocaleDateString()}</Text>
+                    <Text style={styles.date}>Last: {new Date(item.lastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
                 </View>
+
                 <View style={styles.amountContainer}>
                     {item.totalReceived > 0 && (
-                        <Text style={styles.income}>+₹{item.totalReceived.toLocaleString()}</Text>
+                        <View style={styles.amountBadge}>
+                            <Text style={[styles.amountLabel, { color: '#2e7d32' }]}>IN</Text>
+                            <Text style={[styles.amountValue, { color: '#2e7d32' }]}>+₹{item.totalReceived.toLocaleString()}</Text>
+                        </View>
                     )}
                     {item.totalSent > 0 && (
-                        <Text style={styles.expense}>-₹{item.totalSent.toLocaleString()}</Text>
+                        <View style={styles.amountBadge}>
+                            <Text style={[styles.amountLabel, { color: '#c62828' }]}>OUT</Text>
+                            <Text style={[styles.amountValue, { color: '#c62828' }]}>-₹{item.totalSent.toLocaleString()}</Text>
+                        </View>
                     )}
                 </View>
+
+                <Pressable
+                    onPress={() => handleEditPress(item)}
+                    style={({ pressed }) => [
+                        styles.editButtonAbsolute,
+                        { opacity: pressed ? 0.6 : 1 }
+                    ]}
+                    hitSlop={15}
+                >
+                    <Text style={styles.editIcon}>✎</Text>
+                </Pressable>
             </View>
         );
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="dark-content" backgroundColor="#f5f7fa" />
             <View style={styles.header}>
-                <Text style={styles.title}>Person Ledger</Text>
-                <Text style={styles.subtitle}>Track payments by people</Text>
+                <View>
+                    <Text style={styles.title}>Person Ledger</Text>
+                    <Text style={styles.subtitle}>Track your transactions by contact</Text>
+                </View>
+                <View style={styles.headerIconContainer}>
+                    <Text style={{ fontSize: 24 }}>📒</Text>
+                </View>
             </View>
 
             {ledgerData.length === 0 ? (
                 <View style={styles.emptyState}>
+                    <Text style={styles.emptyEmoji}>📭</Text>
                     <Text style={styles.emptyText}>No transaction history found.</Text>
+                    <Text style={styles.emptySubText}>Transactions tagged with people will appear here.</Text>
                 </View>
             ) : (
                 <FlatList
@@ -96,29 +130,31 @@ const LedgerScreen = () => {
                 />
             )}
 
-            {/* Edit Name Custom Modal (Absolute View) */}
+            {/* Edit Name Custom Modal */}
             {isEditModalVisible && (
                 <View style={styles.customModalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Edit Contact Name</Text>
-                        <Text style={styles.modalSubtitle}>For: {editingContact?.id}</Text>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Edit Alias</Text>
+                            <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                                <Text style={styles.closeModalText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.modalSubtitle}>Set a friendly name for <Text style={{ fontWeight: 'bold' }}>{editingContact?.id}</Text></Text>
 
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter Name (e.g., Milk Man)"
+                            placeholder="e.g., John Doe"
                             value={newName}
                             onChangeText={setNewName}
                             autoFocus
+                            placeholderTextColor="#aaa"
                         />
 
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity onPress={() => setIsEditModalVisible(false)} style={styles.cancelBtn}>
-                                <Text style={styles.cancelText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSaveName} style={styles.saveBtn}>
-                                <Text style={styles.saveText}>Save</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity onPress={handleSaveName} style={styles.saveBtn}>
+                            <Text style={styles.saveText}>Save Changes</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             )}
@@ -137,135 +173,203 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        padding: 24,
-        backgroundColor: '#fff',
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 4,
-        marginBottom: 10,
+        paddingHorizontal: 24,
+        paddingTop: 10,
+        paddingBottom: 20,
+        backgroundColor: '#f5f7fa', // Blend with background
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
+        fontWeight: '800', // Extra bold
         color: '#1a1a1a',
+        letterSpacing: -0.5,
     },
     subtitle: {
         fontSize: 14,
         color: '#666',
         marginTop: 4,
+        fontWeight: '500',
+    },
+    headerIconContainer: {
+        width: 45, height: 45,
+        borderRadius: 25,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 3,
     },
     list: {
-        padding: 16,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     card: {
         flexDirection: 'row',
         backgroundColor: '#fff',
         padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
+        borderRadius: 24,
+        marginBottom: 16,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.03,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowColor: '#6c757d',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
     },
     avatarContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#e3f2fd',
+        width: 56,
+        height: 56,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: 14,
     },
     avatarText: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#1976d2',
+        color: '#fff',
     },
     infoContainer: {
         flex: 1,
-        marginRight: 10,
+        marginRight: 4,
+        justifyContent: 'center',
     },
     nameRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 2,
+        marginBottom: 4,
+    },
+    nameWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     name: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
-        color: '#333',
-        marginRight: 8,
+        color: '#2d3436',
     },
-    editButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 4,
+    editButtonAbsolute: {
+        position: 'absolute',
+        top: -10,
+        right: 10,
+        padding: 5,
+        zIndex: 10,
     },
     editIcon: {
-        fontSize: 14,
-        color: '#999',
-        marginLeft: 4,
+        fontSize: 16,
+        color: '#000000ff',
     },
     subId: {
         fontSize: 12,
-        color: '#999',
-        marginBottom: 2,
+        color: '#636e72',
+        marginBottom: 4,
     },
     date: {
         fontSize: 11,
-        color: '#ccc',
+        color: '#b2bec3',
+        fontWeight: '500',
     },
     amountContainer: {
         alignItems: 'flex-end',
+        justifyContent: 'center',
     },
-    income: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        color: '#2e7d32',
-        marginBottom: 2,
+    amountBadge: {
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        marginBottom: 2
     },
-    expense: {
+    amountLabel: {
+        fontSize: 9,
+        fontWeight: '800',
+        textTransform: 'uppercase',
+        opacity: 0.7
+    },
+    amountValue: {
         fontSize: 15,
-        fontWeight: 'bold',
-        color: '#e53935',
+        fontWeight: '700',
     },
     emptyState: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 40,
+    },
+    emptyEmoji: {
+        fontSize: 60,
+        marginBottom: 20,
+        opacity: 0.8
     },
     emptyText: {
-        fontSize: 16,
-        color: '#999',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
+    emptySubText: {
+        fontSize: 14,
+        color: '#888',
+        textAlign: 'center',
+        lineHeight: 20,
     },
     customModalOverlay: {
         position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        top: 0, bottom: 0, left: 0, right: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 2000,
-        elevation: 1000,
     },
-    modalContent: { backgroundColor: '#fff', width: '85%', padding: 24, borderRadius: 16, elevation: 5 },
-    modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 5, color: '#333' },
-    modalSubtitle: { fontSize: 13, color: '#666', marginBottom: 20 },
-    input: { borderWidth: 1, borderColor: '#eee', borderRadius: 12, padding: 14, marginBottom: 20, fontSize: 16, color: '#333', backgroundColor: '#f9f9f9' },
-    modalButtons: { flexDirection: 'row', justifyContent: 'flex-end' },
-    cancelBtn: { padding: 12, marginRight: 10 },
-    cancelText: { color: '#666', fontWeight: 'bold' },
-    saveBtn: { backgroundColor: '#2e7d32', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12 },
-    saveText: { color: '#fff', fontWeight: 'bold' },
+    modalContent: {
+        backgroundColor: '#fff',
+        width: '85%',
+        padding: 24,
+        borderRadius: 24,
+        elevation: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: { fontSize: 22, fontWeight: '800', color: '#333' },
+    closeModalText: { fontSize: 20, color: '#aaa', padding: 5 },
+    modalSubtitle: { fontSize: 14, color: '#666', marginBottom: 25 },
+    input: {
+        borderWidth: 1.5,
+        borderColor: '#f0f0f0',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 25,
+        fontSize: 17,
+        color: '#333',
+        backgroundColor: '#fcfcfc',
+        fontWeight: '500'
+    },
+    saveBtn: {
+        backgroundColor: '#1a1a1a', // Black for premium feel
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    saveText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
 
 export default LedgerScreen;
