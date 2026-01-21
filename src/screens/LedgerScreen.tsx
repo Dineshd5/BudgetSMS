@@ -3,13 +3,19 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Pressabl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTransactions } from '../context/TransactionContext';
-import { ChevronRight } from '../components/Icons';
+import { useTheme } from '../context/ThemeContext';
+import { ChevronRight, EditIcon, LedgerIcon, EmptyBoxIcon, CloseIcon } from '../components/Icons';
 
 const LedgerScreen = () => {
-    const { getPersonLedger, loading, updateContactName } = useTransactions();
+    const { getPersonLedger, loading, updateContactName, transactions } = useTransactions();
+    const { theme, isDark } = useTheme();
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editingContact, setEditingContact] = useState<{ id: string; name: string } | null>(null);
     const [newName, setNewName] = useState("");
+
+    // Detail Modal State
+    const [selectedPerson, setSelectedPerson] = useState<{ id: string; name: string } | null>(null);
+    const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
     // Fetch ledger data
     const ledgerData = useMemo(() => getPersonLedger(), [getPersonLedger]);
@@ -29,8 +35,8 @@ const LedgerScreen = () => {
 
     if (loading) {
         return (
-            <View style={styles.loader}>
-                <Text style={{ color: '#888' }}>Loading Ledger...</Text>
+            <View style={[styles.loader, { backgroundColor: theme.colors.background }]}>
+                <Text style={{ color: theme.colors.textSecondary }}>Loading Ledger...</Text>
             </View>
         );
     }
@@ -58,67 +64,72 @@ const LedgerScreen = () => {
         const gradientColors = getAvatarGradient(item.name || item.id);
 
         return (
-            <View style={styles.card}>
-                <LinearGradient colors={gradientColors} style={styles.avatarContainer}>
-                    <Text style={styles.avatarText}>{initials}</Text>
-                </LinearGradient>
+            <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                    setSelectedPerson(item);
+                    setIsDetailModalVisible(true);
+                }}
+            >
+                <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                    <LinearGradient colors={gradientColors} style={styles.avatarContainer}>
+                        <Text style={styles.avatarText}>{initials}</Text>
+                    </LinearGradient>
 
-                <View style={styles.infoContainer}>
-                    <View style={styles.nameRow}>
-                        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+                    <View style={styles.infoContainer}>
+                        <View style={styles.nameRow}>
+                            <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={1}>{item.name}</Text>
+                        </View>
+
+                        {item.name !== item.id && <Text style={[styles.subId, { color: theme.colors.textSecondary }]}>{item.id}</Text>}
+                        <Text style={[styles.date, { color: theme.colors.textSecondary }]}>Last: {new Date(item.lastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
                     </View>
 
-                    {item.name !== item.id && <Text style={styles.subId}>{item.id}</Text>}
-                    <Text style={styles.date}>Last: {new Date(item.lastDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                </View>
+                    <View style={styles.amountContainer}>
+                        {item.totalReceived > 0 && (
+                            <View style={styles.amountBadge}>
+                                <Text style={[styles.amountLabel, { color: theme.colors.income }]}>IN</Text>
+                                <Text style={[styles.amountValue, { color: theme.colors.income }]}>+₹{item.totalReceived.toLocaleString()}</Text>
+                            </View>
+                        )}
+                        {item.totalSent > 0 && (
+                            <View style={styles.amountBadge}>
+                                <Text style={[styles.amountLabel, { color: theme.colors.expense }]}>OUT</Text>
+                                <Text style={[styles.amountValue, { color: theme.colors.expense }]}>-₹{item.totalSent.toLocaleString()}</Text>
+                            </View>
+                        )}
+                    </View>
 
-                <View style={styles.amountContainer}>
-                    {item.totalReceived > 0 && (
-                        <View style={styles.amountBadge}>
-                            <Text style={[styles.amountLabel, { color: '#2e7d32' }]}>IN</Text>
-                            <Text style={[styles.amountValue, { color: '#2e7d32' }]}>+₹{item.totalReceived.toLocaleString()}</Text>
-                        </View>
-                    )}
-                    {item.totalSent > 0 && (
-                        <View style={styles.amountBadge}>
-                            <Text style={[styles.amountLabel, { color: '#c62828' }]}>OUT</Text>
-                            <Text style={[styles.amountValue, { color: '#c62828' }]}>-₹{item.totalSent.toLocaleString()}</Text>
-                        </View>
-                    )}
+                    <Pressable
+                        onPress={() => handleEditPress(item)}
+                        style={({ pressed }) => [
+                            styles.editButtonAbsolute,
+                            { opacity: pressed ? 0.6 : 1 }
+                        ]}
+                        hitSlop={15}
+                    >
+                        <EditIcon color={theme.colors.text} width={20} height={20} />
+                    </Pressable>
                 </View>
-
-                <Pressable
-                    onPress={() => handleEditPress(item)}
-                    style={({ pressed }) => [
-                        styles.editButtonAbsolute,
-                        { opacity: pressed ? 0.6 : 1 }
-                    ]}
-                    hitSlop={15}
-                >
-                    <Text style={styles.editIcon}>✎</Text>
-                </Pressable>
-            </View>
+            </TouchableOpacity>
         );
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#f5f7fa" />
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
+            <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
                 <View>
-                    <Text style={styles.title}>Person Ledger</Text>
-                    <Text style={styles.subtitle}>Track your transactions by contact</Text>
-                </View>
-                <View style={styles.headerIconContainer}>
-                    <Text style={{ fontSize: 24 }}>📒</Text>
+                    <Text style={[styles.title, { color: theme.colors.text }]}>Person Ledger</Text>
+                    <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Track your transactions by contact</Text>
                 </View>
             </View>
 
             {ledgerData.length === 0 ? (
                 <View style={styles.emptyState}>
-                    <Text style={styles.emptyEmoji}>📭</Text>
-                    <Text style={styles.emptyText}>No transaction history found.</Text>
-                    <Text style={styles.emptySubText}>Transactions tagged with people will appear here.</Text>
+                    <EmptyBoxIcon color={theme.colors.textSecondary} width={64} height={64} />
+                    <Text style={[styles.emptyText, { color: theme.colors.text }]}>No transaction history found.</Text>
+                    <Text style={[styles.emptySubText, { color: theme.colors.textSecondary }]}>Transactions tagged with people will appear here.</Text>
                 </View>
             ) : (
                 <FlatList
@@ -132,32 +143,42 @@ const LedgerScreen = () => {
 
             {/* Edit Name Custom Modal */}
             {isEditModalVisible && (
-                <View style={styles.customModalOverlay}>
-                    <View style={styles.modalContent}>
+                <View style={[styles.customModalOverlay, { backgroundColor: theme.colors.overlay }]}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Edit Alias</Text>
+                            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Edit Alias</Text>
                             <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                                <Text style={styles.closeModalText}>✕</Text>
+                                <CloseIcon color={theme.colors.textSecondary} width={24} height={24} />
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.modalSubtitle}>Set a friendly name for <Text style={{ fontWeight: 'bold' }}>{editingContact?.id}</Text></Text>
+                        <Text style={[styles.modalSubtitle, { color: theme.colors.textSecondary }]}>Set a friendly name for <Text style={{ fontWeight: 'bold', color: theme.colors.text }}>{editingContact?.id}</Text></Text>
 
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
                             placeholder="e.g., John Doe"
                             value={newName}
                             onChangeText={setNewName}
                             autoFocus
-                            placeholderTextColor="#aaa"
+                            placeholderTextColor={theme.colors.textSecondary}
                         />
 
-                        <TouchableOpacity onPress={handleSaveName} style={styles.saveBtn}>
+                        <TouchableOpacity onPress={handleSaveName} style={[styles.saveBtn, { backgroundColor: theme.colors.primary }]}>
                             <Text style={styles.saveText}>Save Changes</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             )}
+
+            {/* Person Detail Modal */}
+            <PersonDetailModal
+                isVisible={isDetailModalVisible}
+                person={selectedPerson}
+                onClose={() => setIsDetailModalVisible(false)}
+                transactions={transactions}
+                theme={theme}
+                isDark={isDark}
+            />
         </SafeAreaView>
     );
 };
@@ -175,16 +196,15 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 24,
         paddingTop: 10,
-        paddingBottom: 20,
+        paddingBottom: 10,
         backgroundColor: '#f5f7fa', // Blend with background
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     title: {
-        fontSize: 28,
-        fontWeight: '800', // Extra bold
-        color: '#1a1a1a',
+        fontSize: 20,
+        fontWeight: '800',
         letterSpacing: -0.5,
     },
     subtitle: {
@@ -196,7 +216,6 @@ const styles = StyleSheet.create({
     headerIconContainer: {
         width: 45, height: 45,
         borderRadius: 25,
-        backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#000',
@@ -208,13 +227,14 @@ const styles = StyleSheet.create({
     list: {
         paddingHorizontal: 20,
         paddingBottom: 40,
+        paddingTop: 10,
     },
     card: {
         flexDirection: 'row',
         backgroundColor: '#fff',
         padding: 16,
         borderRadius: 24,
-        marginBottom: 16,
+        marginBottom: 12,
         alignItems: 'center',
         shadowColor: '#6c757d',
         shadowOffset: { width: 0, height: 8 },
@@ -225,12 +245,12 @@ const styles = StyleSheet.create({
         borderColor: '#f0f0f0',
     },
     avatarContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 20,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 14,
+        marginRight: 10,
     },
     avatarText: {
         fontSize: 18,
@@ -258,13 +278,13 @@ const styles = StyleSheet.create({
     },
     editButtonAbsolute: {
         position: 'absolute',
-        top: -10,
-        right: 10,
+        top: -6,
+        right: -6,
         padding: 5,
         zIndex: 10,
     },
     editIcon: {
-        fontSize: 16,
+        fontSize: 20,
         color: '#000000ff',
     },
     subId: {
@@ -310,7 +330,6 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
         marginBottom: 8,
     },
     emptySubText: {
@@ -328,7 +347,6 @@ const styles = StyleSheet.create({
         zIndex: 2000,
     },
     modalContent: {
-        backgroundColor: '#fff',
         width: '85%',
         padding: 24,
         borderRadius: 24,
@@ -344,7 +362,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
     },
-    modalTitle: { fontSize: 22, fontWeight: '800', color: '#333' },
+    modalTitle: { fontSize: 22, fontWeight: '800' },
     closeModalText: { fontSize: 20, color: '#aaa', padding: 5 },
     modalSubtitle: { fontSize: 14, color: '#666', marginBottom: 25 },
     input: {
@@ -354,8 +372,6 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 25,
         fontSize: 17,
-        color: '#333',
-        backgroundColor: '#fcfcfc',
         fontWeight: '500'
     },
     saveBtn: {
@@ -371,5 +387,78 @@ const styles = StyleSheet.create({
     },
     saveText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
+
+const PersonDetailModal = ({ isVisible, person, onClose, transactions, theme, isDark }: any) => {
+    if (!person) return null;
+
+    // Filter and sort transactions for this person (normalized by source)
+    const history = transactions
+        .filter((t: any) => (t.source === person.id) && t.status === 'approved')
+        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return (
+        <React.Fragment>
+            {isVisible && (
+                <View style={[styles.customModalOverlay, { backgroundColor: theme.colors.overlay, zIndex: 3000 }]}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.colors.card, height: '80%', padding: 0 }]}>
+                        {/* Header */}
+                        <View style={[styles.modalHeader, { padding: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
+                            <View>
+                                <Text style={[styles.modalTitle, { color: theme.colors.text, fontSize: 20 }]}>{person.name}</Text>
+                                <Text style={{ color: theme.colors.textSecondary, fontSize: 12 }}>{person.id}</Text>
+                            </View>
+                            <TouchableOpacity onPress={onClose} style={{ padding: 5 }}>
+                                <CloseIcon color={theme.colors.textSecondary} width={24} height={24} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Summary Stats */}
+                        <View style={{ flexDirection: 'row', padding: 15, justifyContent: 'space-around', backgroundColor: isDark ? theme.colors.surface : '#f8f9fa' }}>
+                            <View style={{ alignItems: 'center' }}>
+                                <Text style={{ fontSize: 11, color: theme.colors.textSecondary, fontWeight: '600' }}>TOTAL RECEIVED</Text>
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.colors.income }}>+₹{person.totalReceived?.toLocaleString()}</Text>
+                            </View>
+                            <View style={{ height: '100%', width: 1, backgroundColor: theme.colors.border }} />
+                            <View style={{ alignItems: 'center' }}>
+                                <Text style={{ fontSize: 11, color: theme.colors.textSecondary, fontWeight: '600' }}>TOTAL SENT</Text>
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme.colors.expense }}>-₹{person.totalSent?.toLocaleString()}</Text>
+                            </View>
+                        </View>
+
+                        {/* List */}
+                        <FlatList
+                            data={history}
+                            keyExtractor={(item) => item.id} // Ensure transaction ID is unique
+                            contentContainerStyle={{ padding: 20 }}
+                            renderItem={({ item }) => (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: theme.colors.border }}>
+                                    <View>
+                                        <Text style={{ fontSize: 14, color: theme.colors.text, fontWeight: '500', marginBottom: 2 }}>
+                                            {new Date(item.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                        </Text>
+                                        <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>{item.category || "General"}</Text>
+                                    </View>
+                                    <View style={{ alignItems: 'flex-end' }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: item.type === 'credit' ? theme.colors.income : theme.colors.expense }}>
+                                            {item.type === 'credit' ? '+' : '-'}₹{item.amount.toLocaleString()}
+                                        </Text>
+                                        <Text style={{ fontSize: 10, color: theme.colors.textSecondary }}>
+                                            {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+                            ListEmptyComponent={
+                                <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, marginTop: 20 }}>No records found</Text>
+                            }
+                        />
+                    </View>
+                </View>
+            )}
+        </React.Fragment>
+    );
+};
+
+const isDark = false; // Just to satisfy linter if needed locally, but passed via props
 
 export default LedgerScreen;

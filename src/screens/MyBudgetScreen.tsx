@@ -3,13 +3,14 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, FlatList } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BarChart } from "react-native-gifted-charts";
 import { useTransactions } from "../context/TransactionContext";
-import { ChevronLeft, ChevronRight } from "../components/Icons";
-
+import { useTheme } from "../context/ThemeContext";
+import { ChevronLeft, ChevronRight, EditIcon, BulbIcon } from "../components/Icons";
 import { useNavigation } from "@react-navigation/native";
 
 const MyBudgetScreen = () => {
     const navigation = useNavigation();
     const { getMonthlyTotals, getDailyBreakdown, loading, transactions } = useTransactions();
+    const { theme, isDark } = useTheme();
 
     // State for selected month/year - defaulting to current
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -74,42 +75,42 @@ const MyBudgetScreen = () => {
     };
 
     if (loading) {
-        return <View style={styles.loader}><Text>Loading...</Text></View>;
+        return <View style={[styles.loader, { backgroundColor: theme.colors.background }]}><Text style={{ color: theme.colors.text }}>Loading...</Text></View>;
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
             <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 5 }}>
-                        <ChevronLeft color="#333" width={24} height={24} />
+                        <ChevronLeft color={theme.colors.text} width={24} height={24} />
                     </TouchableOpacity>
-                    <Text style={styles.title}>My Budget</Text>
-                    <Text style={styles.editIcon}>✎</Text>
+                    <Text style={[styles.title, { color: theme.colors.text }]}>My Budget</Text>
+                    <EditIcon color={theme.colors.text} width={20} height={20} />
                 </View>
 
                 {/* Date Selector */}
                 <View style={styles.dateSelector}>
                     <View style={styles.dateNavContainer}>
                         <TouchableOpacity onPress={() => changeMonth('prev')} style={{ paddingHorizontal: 10 }}>
-                            <ChevronLeft color="#000" width={22} height={22} />
+                            <ChevronLeft color={theme.colors.text} width={22} height={22} />
                         </TouchableOpacity>
-                        <Text style={styles.dateText}>
+                        <Text style={[styles.dateText, { color: theme.colors.text }]}>
                             {selectedDate.toLocaleString('default', { month: 'short', year: 'numeric' })}
                         </Text>
                         <TouchableOpacity onPress={() => changeMonth('next')} style={{ paddingHorizontal: 10 }}>
-                            <ChevronRight color="#000" width={22} height={22} />
+                            <ChevronRight color={theme.colors.text} width={22} height={22} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.legendContainer}>
                         <View style={styles.legendItem}>
-                            <View style={[styles.dot, { backgroundColor: "#40c057" }]} />
-                            <Text style={styles.legendText}>Income</Text>
+                            <View style={[styles.dot, { backgroundColor: theme.colors.income }]} />
+                            <Text style={[styles.legendText, { color: theme.colors.textSecondary }]}>Income</Text>
                         </View>
                         <View style={styles.legendItem}>
-                            <View style={[styles.dot, { backgroundColor: "#fa5252" }]} />
-                            <Text style={styles.legendText}>Expense</Text>
+                            <View style={[styles.dot, { backgroundColor: theme.colors.expense }]} />
+                            <Text style={[styles.legendText, { color: theme.colors.textSecondary }]}>Expense</Text>
                         </View>
                     </View>
                 </View>
@@ -120,17 +121,17 @@ const MyBudgetScreen = () => {
                         <BarChart
                             data={barData}
                             barWidth={8}
-                            spacing={20} // Default spacing, overridden by data
+                            spacing={20}
                             initialSpacing={10}
                             noOfSections={4}
                             barBorderRadius={2}
                             yAxisThickness={0}
                             xAxisThickness={0}
-                            yAxisTextStyle={{ color: 'gray', fontSize: 10 }}
+                            yAxisTextStyle={{ color: theme.colors.textSecondary, fontSize: 10 }}
                             renderTooltip={(item: any) => {
                                 return (
-                                    <View style={{ marginBottom: 20, marginLeft: -6, backgroundColor: '#333', padding: 4, borderRadius: 4 }}>
-                                        <Text style={{ color: '#fff', fontSize: 10 }}>₹{item.realValue?.toLocaleString() ?? item.value}</Text>
+                                    <View style={{ marginBottom: 20, marginLeft: -6, backgroundColor: theme.colors.card, padding: 4, borderRadius: 4, borderWidth: 1, borderColor: theme.colors.border }}>
+                                        <Text style={{ color: theme.colors.text, fontSize: 10 }}>₹{item.realValue?.toLocaleString() ?? item.value}</Text>
                                     </View>
                                 );
                             }}
@@ -141,15 +142,18 @@ const MyBudgetScreen = () => {
 
                 {/* Summary Rows - Clickable */}
                 <View style={styles.summaryContainer}>
-                    <SummaryRow label="Income" amount={income} color="#40c057" onPress={() => openDetail('Income')} />
-                    <SummaryRow label="Expense" amount={expense} color="#fa5252" onPress={() => openDetail('Expense')} />
-                    <SummaryRow label="Left for Saving" amount={savings} color="#333" />
+                    <SummaryRow label="Income" amount={income} color={theme.colors.income} textColor={theme.colors.text} onPress={() => openDetail('Income')} />
+                    <SummaryRow label="Expense" amount={expense} color={theme.colors.expense} textColor={theme.colors.text} onPress={() => openDetail('Expense')} />
+                    <SummaryRow label="Left for Saving" amount={savings} color={theme.colors.textSecondary} textColor={theme.colors.text} />
                 </View>
 
                 {/* Insight Card */}
-                <View style={styles.insightCard}>
-                    <Text style={styles.insightTitle}>💡 Insight</Text>
-                    <Text style={styles.insightText}>
+                <View style={[styles.insightCard, { backgroundColor: theme.colors.card }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                        <BulbIcon color={theme.colors.warning} width={18} height={18} style={{ marginRight: 8 }} />
+                        <Text style={[styles.insightTitle, { color: theme.colors.text, marginBottom: 0 }]}>Insight</Text>
+                    </View>
+                    <Text style={[styles.insightText, { color: theme.colors.textSecondary }]}>
                         {savings > 0
                             ? `You have saved ₹${savings.toLocaleString()} this month!`
                             : "Your expenses exceeded your income this month."}
@@ -159,16 +163,16 @@ const MyBudgetScreen = () => {
 
             {/* Detail Modal */}
             {isDetailModalVisible && (
-                <View style={styles.detailModalOverlay}>
-                    <View style={styles.detailModalContent}>
+                <View style={[styles.detailModalOverlay, { backgroundColor: theme.colors.overlay }]}>
+                    <View style={[styles.detailModalContent, { backgroundColor: theme.colors.card }]}>
                         <View style={styles.detailHeader}>
-                            <Text style={styles.detailTitle}>{detailType} Details</Text>
-                            <TouchableOpacity onPress={() => setIsDetailModalVisible(false)} style={styles.closeButton}>
-                                <Text style={styles.closeButtonText}>Close</Text>
+                            <Text style={[styles.detailTitle, { color: theme.colors.text }]}>{detailType} Details</Text>
+                            <TouchableOpacity onPress={() => setIsDetailModalVisible(false)} style={[styles.closeButton, { backgroundColor: isDark ? theme.colors.surface : '#f1f3f5' }]}>
+                                <Text style={[styles.closeButtonText, { color: theme.colors.primary }]}>Close</Text>
                             </TouchableOpacity>
                         </View>
                         {detailTransactions.length === 0 ? (
-                            <Text style={styles.noDataText}>No transactions found.</Text>
+                            <Text style={[styles.noDataText, { color: theme.colors.textSecondary }]}>No transactions found.</Text>
                         ) : (
                             <FlatList
                                 data={detailTransactions}
@@ -176,10 +180,10 @@ const MyBudgetScreen = () => {
                                 renderItem={({ item }) => (
                                     <View style={styles.transactionRow}>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.txSource}>{item.source || "Unknown"}</Text>
-                                            <Text style={styles.txDate}>{new Date(item.date).toLocaleDateString()}</Text>
+                                            <Text style={[styles.txSource, { color: theme.colors.text }]}>{item.source || "Unknown"}</Text>
+                                            <Text style={[styles.txDate, { color: theme.colors.textSecondary }]}>{new Date(item.date).toLocaleDateString()}</Text>
                                         </View>
-                                        <Text style={[styles.txAmount, { color: detailType === 'Income' ? '#40c057' : '#fa5252' }]}>
+                                        <Text style={[styles.txAmount, { color: detailType === 'Income' ? theme.colors.income : theme.colors.expense }]}>
                                             {detailType === 'Income' ? '+' : '-'}₹{item.amount.toLocaleString()}
                                         </Text>
                                     </View>
@@ -193,15 +197,15 @@ const MyBudgetScreen = () => {
     );
 };
 
-const SummaryRow = ({ label, amount, color, onPress }: { label: string, amount: number, color: string, onPress?: () => void }) => (
+const SummaryRow = ({ label, amount, color, textColor, onPress }: { label: string, amount: number, color: string, textColor: string, onPress?: () => void }) => (
     <TouchableOpacity style={styles.summaryRow} onPress={onPress} disabled={!onPress}>
         <View style={styles.row}>
             <View style={[styles.dot, { backgroundColor: color }]} />
-            <Text style={styles.summaryLabel}>{label}</Text>
+            <Text style={[styles.summaryLabel, { color: textColor }]}>{label}</Text>
         </View>
         <View style={styles.row}>
-            <Text style={styles.summaryAmount}>₹{amount.toLocaleString()}</Text>
-            {onPress && <Text style={styles.chevron}> ›</Text>}
+            <Text style={[styles.summaryAmount, { color: textColor }]}>{amount.toLocaleString()}</Text>
+            {onPress && <ChevronRight color="#ccc" width={20} height={20} />}
         </View>
     </TouchableOpacity>
 );
@@ -216,8 +220,8 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
     },
     backIcon: { fontSize: 24, padding: 5, color: '#333' },
-    title: { fontSize: 18, fontWeight: "600", color: '#000' },
-    editIcon: { fontSize: 20, padding: 5, color: '#333' },
+    title: { fontSize: 18, fontWeight: "600" },
+    editIcon: { fontSize: 20, padding: 5 },
     dateSelector: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -225,11 +229,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 20,
     },
-    dateText: { fontSize: 22, fontWeight: "bold", color: "#000" },
+    dateText: { fontSize: 20, fontWeight: "bold" },
     legendContainer: { flexDirection: "row" },
     legendItem: { flexDirection: "row", alignItems: "center", marginLeft: 15 },
     dot: { width: 8, height: 8, borderRadius: 4, marginRight: 5 },
-    legendText: { fontSize: 12, color: "#777" },
+    legendText: { fontSize: 12 },
     chartContainer: {
         alignItems: "center",
         marginBottom: 30,
@@ -249,13 +253,11 @@ const styles = StyleSheet.create({
     },
     row: { flexDirection: "row", alignItems: "center" },
     dateNavContainer: { flexDirection: 'row', alignItems: 'center' },
-    navArrow: { fontSize: 22, marginHorizontal: 10, color: '#000' },
-    summaryLabel: { fontSize: 16, fontWeight: "500", marginLeft: 10, color: "#333" },
-    summaryAmount: { fontSize: 16, fontWeight: "bold", color: "#000" },
+    summaryLabel: { fontSize: 16, fontWeight: "500", marginLeft: 10 },
+    summaryAmount: { fontSize: 16, fontWeight: "bold" },
     chevron: { fontSize: 18, color: "#ccc" },
     insightCard: {
         marginHorizontal: 20,
-        backgroundColor: "#fff",
         padding: 20,
         borderRadius: 16,
         shadowColor: "#000",
@@ -264,8 +266,8 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
     },
-    insightTitle: { fontSize: 16, fontWeight: "600", marginBottom: 5, color: "#333" },
-    insightText: { fontSize: 14, color: "#777" },
+    insightTitle: { fontSize: 16, fontWeight: "600", marginBottom: 5 },
+    insightText: { fontSize: 14 },
     detailModalOverlay: {
         position: 'absolute',
         top: 0,
@@ -278,7 +280,6 @@ const styles = StyleSheet.create({
         zIndex: 2000,
     },
     detailModalContent: {
-        backgroundColor: '#fff',
         width: '90%',
         maxHeight: '70%',
         borderRadius: 16,
@@ -297,20 +298,16 @@ const styles = StyleSheet.create({
     detailTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
     },
     closeButton: {
-        backgroundColor: '#f1f3f5',
         padding: 5,
         borderRadius: 8,
     },
     closeButtonText: {
-        color: '#339af0',
         fontWeight: 'bold',
     },
     noDataText: {
         textAlign: 'center',
-        color: '#999',
         marginTop: 20,
     },
     transactionRow: {
@@ -323,12 +320,10 @@ const styles = StyleSheet.create({
     },
     txSource: {
         fontSize: 16,
-        color: '#333',
         fontWeight: '500',
     },
     txDate: {
         fontSize: 12,
-        color: '#888',
     },
     txAmount: {
         fontSize: 16,

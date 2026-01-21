@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import AppNavigator from './src/navigation/AppNavigator';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TransactionProvider } from './src/context/TransactionContext';
-import { StatusBar, useColorScheme } from 'react-native';
+import { ThemeProvider } from './src/context/ThemeContext';
 import { SplashScreen } from './src/components/SplashScreen';
+
+import { AuthProvider } from './src/context/AuthContext';
 
 export default function App() {
   const [isShowSplash, setIsShowSplash] = useState(true);
@@ -14,14 +16,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        translucent={false}
-        barStyle="dark-content"
-        backgroundColor="#ffffff"
-      />
-      <TransactionProvider>
-        <AppNavigator />
-      </TransactionProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <TransactionProvider>
+            <AppNavigator />
+          </TransactionProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

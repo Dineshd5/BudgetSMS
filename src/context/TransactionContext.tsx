@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 import { Platform, PermissionsAndroid } from "react-native";
 import SmsAndroid from "react-native-get-sms-android";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
     initDB,
     insertTransaction,
@@ -62,6 +63,21 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     const [budget, setBudget] = useState(50000); // Default budget
     const [isSmsPermissionGranted, setIsSmsPermissionGranted] = useState(false);
 
+    // Load persisted budget on mount
+    useEffect(() => {
+        const loadBudget = async () => {
+            try {
+                const savedBudget = await AsyncStorage.getItem('user_budget');
+                if (savedBudget) {
+                    setBudget(parseInt(savedBudget, 10));
+                }
+            } catch (e) {
+                console.error("Failed to load budget", e);
+            }
+        };
+        loadBudget();
+    }, []);
+
     const checkPermissionStatus = useCallback(async () => {
         if (Platform.OS === 'android') {
             const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS);
@@ -71,8 +87,13 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
         return false;
     }, []);
 
-    const updateBudget = useCallback((newBudget: number) => {
+    const updateBudget = useCallback(async (newBudget: number) => {
         setBudget(newBudget);
+        try {
+            await AsyncStorage.setItem('user_budget', newBudget.toString());
+        } catch (e) {
+            console.error("Failed to save budget", e);
+        }
     }, []);
 
     const refreshTransactionsInternal = useCallback(async (silent = false) => {

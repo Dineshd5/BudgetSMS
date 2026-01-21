@@ -1,10 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Share } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Share, Switch, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTransactions } from '../context/TransactionContext';
+import { useTheme } from '../context/ThemeContext';
+import { ChevronRight, UserIcon, InfoIcon, MoonIcon, SunIcon, LockIcon, ExportIcon, TrashIcon } from "../components/Icons";
+import { useAuth } from "../context/AuthContext";
 
-const ProfileScreen = () => {
+export default function ProfileScreen() {
+    const { theme, isDark, toggleTheme } = useTheme();
     const { budget, updateBudget, clearTransactions, transactions } = useTransactions();
+    const { user, signOut } = useAuth();
+    const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
 
     const handleEditBudget = () => {
         Alert.prompt(
@@ -71,118 +77,140 @@ const ProfileScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
             <ScrollView contentContainerStyle={styles.content}>
 
                 {/* Header Profile */}
                 <View style={styles.header}>
-                    <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>👤</Text>
+                    <View style={[styles.avatar, { backgroundColor: isDark ? '#3a3a3a' : '#dfe6e9' }]}>
+                        {user?.photoURL ? (
+                            <Image source={{ uri: user.photoURL }} style={{ width: 60, height: 60, borderRadius: 30 }} />
+                        ) : (
+                            <UserIcon color={theme.colors.text} width={40} height={40} />
+                        )}
                     </View>
-                    <Text style={styles.name}>My Profile</Text>
-                    <Text style={styles.subtitle}>BudgetSMS User</Text>
+                    <Text style={[styles.name, { color: theme.colors.text }]}>{user?.displayName || "User"}</Text>
+                    <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{user?.email || "BudgetSMS User"}</Text>
                 </View>
 
                 {/* Stats Card */}
-                <View style={styles.card}>
-                    <Text style={styles.cardLabel}>Monthly Budget</Text>
-                    <Text style={styles.cardValue}>₹{budget.toLocaleString()}</Text>
+                <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+                    <Text style={[styles.cardLabel, { color: theme.colors.textSecondary }]}>Monthly Budget</Text>
+                    <Text style={[styles.cardValue, { color: theme.colors.success }]}>₹{budget.toLocaleString()}</Text>
                 </View>
 
                 {/* Settings List */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Settings</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Settings</Text>
 
-                    <TouchableOpacity style={styles.row} onPress={handleEditBudget}>
+                    {/* <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.card }]} onPress={handleEditBudget}>
                         <View style={styles.rowLeft}>
                             <Text style={styles.icon}>✏️</Text>
-                            <Text style={styles.rowText}>Edit Monthly Budget</Text>
+                            <Text style={[styles.rowText, { color: theme.colors.text }]}>Edit Monthly Budget</Text>
                         </View>
-                        <Text style={styles.chevron}>›</Text>
-                    </TouchableOpacity>
+                        <Text style={[styles.chevron, { color: theme.colors.textSecondary }]}>›</Text>
+                    </TouchableOpacity> */}
 
-                    <TouchableOpacity style={styles.row} onPress={() => Alert.alert("About", "BudgetSMS v1.0.0")}>
+                    <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.card }]} onPress={() => Alert.alert("About", "BudgetSMS v1.0.0")}>
                         <View style={styles.rowLeft}>
-                            <Text style={styles.icon}>ℹ️</Text>
-                            <Text style={styles.rowText}>App Info</Text>
+                            <InfoIcon color={theme.colors.text} width={24} height={24} style={{ marginRight: 12 }} />
+                            <Text style={[styles.rowText, { color: theme.colors.text }]}>App Info</Text>
                         </View>
-                        <Text style={styles.chevron}>›</Text>
+                        <ChevronRight color={theme.colors.textSecondary} width={24} height={24} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.row} onPress={() => {
+                    <View style={[styles.row, { backgroundColor: theme.colors.card }]}>
+                        <View style={styles.rowLeft}>
+                            {isDark ? <MoonIcon color={theme.colors.text} width={24} height={24} style={{ marginRight: 12 }} /> : <SunIcon color={theme.colors.text} width={24} height={24} style={{ marginRight: 12 }} />}
+                            <Text style={[styles.rowText, { color: theme.colors.text }]}>Dark Mode</Text>
+                        </View>
+                        <Switch
+                            value={isDark}
+                            onValueChange={toggleTheme}
+                            trackColor={{ false: '#ddd', true: theme.colors.primary }}
+                            thumbColor={isDark ? '#fff' : '#f4f3f4'}
+                        />
+                    </View>
+
+                    <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.card }]} onPress={() => {
                         // In a real app, use Linking.openURL with your hosted policy
                         Alert.alert("Privacy Policy", "This app processes all SMS data locally. No data is uploaded to any server. \n\nFull policy: https://pages.github.io/budget-sms/privacy");
                     }}>
                         <View style={styles.rowLeft}>
-                            <Text style={styles.icon}>🔒</Text>
-                            <Text style={styles.rowText}>Privacy Policy</Text>
+                            <LockIcon color={theme.colors.text} width={24} height={24} style={{ marginRight: 12 }} />
+                            <Text style={[styles.rowText, { color: theme.colors.text }]}>Privacy Policy</Text>
                         </View>
-                        <Text style={styles.chevron}>›</Text>
+                        <ChevronRight color={theme.colors.textSecondary} width={24} height={24} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.row} onPress={handleExportData}>
+                    <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.card }]} onPress={handleExportData}>
                         <View style={styles.rowLeft}>
-                            <Text style={styles.icon}>📤</Text>
-                            <Text style={styles.rowText}>Export Data (CSV)</Text>
+                            <ExportIcon color={theme.colors.text} width={24} height={24} style={{ marginRight: 12 }} />
+                            <Text style={[styles.rowText, { color: theme.colors.text }]}>Export Data (CSV)</Text>
                         </View>
-                        <Text style={styles.chevron}>›</Text>
+                        <ChevronRight color={theme.colors.textSecondary} width={24} height={24} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.row, { backgroundColor: theme.colors.card, marginTop: 20 }]} onPress={signOut}>
+                        <View style={styles.rowLeft}>
+                            <Text style={[styles.rowText, { color: theme.colors.error }]}>Log Out</Text>
+                        </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Danger Zone</Text>
-                    <TouchableOpacity style={styles.dangerRow} onPress={handleResetData}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Danger Zone</Text>
+                    <TouchableOpacity style={[styles.dangerRow, { backgroundColor: isDark ? '#3d1a1a' : '#fff5f5', borderColor: isDark ? '#5a2121' : '#ffc9c9' }]} onPress={handleResetData}>
                         <View style={styles.rowLeft}>
-                            <Text style={styles.icon}>🗑️</Text>
-                            <Text style={styles.dangerText}>Reset All Data</Text>
+                            <TrashIcon color={theme.colors.error} width={24} height={24} style={{ marginRight: 12 }} />
+                            <Text style={[styles.dangerText, { color: theme.colors.error }]}>Reset All Data</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f5f7fa' },
-    content: { padding: 16 }, // Reduced from 20
-    header: { alignItems: 'center', marginBottom: 20, marginTop: 10 }, // Reduced margin
+    container: { flex: 1 },
+    content: { padding: 16 },
+    header: { alignItems: 'center', marginBottom: 20, marginTop: 10 },
     avatar: {
-        width: 70, height: 70, borderRadius: 35, backgroundColor: '#dfe6e9', // Reduced size
+        width: 70, height: 70, borderRadius: 35,
         justifyContent: 'center', alignItems: 'center', marginBottom: 10,
         shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4
     },
-    avatarText: { fontSize: 30 }, // Reduced font size
-    name: { fontSize: 22, fontWeight: 'bold', color: '#2d3436' }, // Reduced font size
-    subtitle: { fontSize: 13, color: '#636e72', marginTop: 2 },
+    avatarText: { fontSize: 30 },
+    name: { fontSize: 22, fontWeight: 'bold' },
+    subtitle: { fontSize: 13, marginTop: 2 },
 
     card: {
-        backgroundColor: '#fff', padding: 16, borderRadius: 16, marginBottom: 20, // Reduced padding & margin
+        padding: 16, borderRadius: 16, marginBottom: 20,
         alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8
     },
-    cardLabel: { fontSize: 12, color: '#888', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 },
-    cardValue: { fontSize: 28, fontWeight: 'bold', color: '#2e7d32' }, // Reduced font size
+    cardLabel: { fontSize: 12, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 },
+    cardValue: { fontSize: 24, fontWeight: 'bold' },
 
-    section: { marginBottom: 20 }, // Reduced margin
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#2d3436', marginBottom: 10, marginLeft: 5 }, // Reduced font size & margin
+    section: { marginBottom: 20 },
+    sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, marginLeft: 5 },
 
     row: {
-        backgroundColor: '#fff', padding: 14, borderRadius: 12, marginBottom: 8, // Reduced padding & margin
+        padding: 14, borderRadius: 12, marginBottom: 8,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1
     },
     rowLeft: { flexDirection: 'row', alignItems: 'center' },
-    icon: { marginRight: 12, fontSize: 18 }, // Reduced margin & size
-    rowText: { fontSize: 15, fontWeight: '500', color: '#2d3436' }, // Slight reduction
-    chevron: { fontSize: 18, color: '#b2bec3' },
+    icon: { marginRight: 12, fontSize: 18 },
+    rowText: { fontSize: 15, fontWeight: '500' },
+    chevron: { fontSize: 18 },
 
     dangerRow: {
-        backgroundColor: '#fff5f5', padding: 14, borderRadius: 12, marginBottom: 8, // Match row style
+        padding: 14, borderRadius: 12, marginBottom: 8,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        borderWidth: 1, borderColor: '#ffc9c9'
+        borderWidth: 1
     },
-    dangerText: { fontSize: 15, color: '#e03131', fontWeight: '600' }
+    dangerText: { fontSize: 15, fontWeight: '600' }
 });
 
-export default ProfileScreen;
+

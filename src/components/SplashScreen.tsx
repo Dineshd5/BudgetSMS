@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 
 export const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -28,8 +28,12 @@ export const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
 
     return (
         <View style={styles.container}>
-            <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
-                <Text style={styles.logo}>💰</Text>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }], alignItems: 'center' }}>
+                <Image
+                    source={require('../assets/logo.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                />
                 <Text style={styles.title}>BudgetSMS</Text>
                 <Text style={styles.subtitle}>Smart Automatic Expense Tracking</Text>
             </Animated.View>
@@ -47,9 +51,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    logo: {
-        fontSize: 80,
-        textAlign: 'center',
+    logoImage: {
+        width: 120,
+        height: 120,
         marginBottom: 20,
     },
     title: {

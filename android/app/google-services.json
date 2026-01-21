@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "155902765",
+    "project_id": "my-first-firebase-projec-ace89",
+    "storage_bucket": "my-first-firebase-projec-ace89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:155902765:android:f7f53fabfffc733ee7a9a4",
+        "android_client_info": {
+          "package_name": "com.budgetsms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "155902765-33g7r76jauqg343m7r7aj4t03mpe8po0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.budgetsms",
+            "certificate_hash": "a0f420658852ac45c38b5a8a7ef79ef62b13f039"
+          }
+        },
+        {
+          "client_id": "155902765-e1ef8mr2dj9slgffhuhfhgd7086pi0qp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdaKHPH0wUHFPN01w4aM6qRm2pml-2aRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "155902765-e1ef8mr2dj9slgffhuhfhgd7086pi0qp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
