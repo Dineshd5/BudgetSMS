@@ -41,14 +41,23 @@ export async function initDB() {
             );
         `);
 
-        // Migration: Add status column if it doesn't exist (harmless to try-catch or check, 
-        // but SQLite simpler is just to try ALTER and ignore error, or check pragma)
-        try {
-            await database.executeSql(`ALTER TABLE transactions ADD COLUMN status TEXT DEFAULT 'pending';`);
-            console.log("Migration: Added status column");
-        } catch (e) {
-            // Ignore error if column likely exists
-            console.warn("Migration: Status column might already exist or another error occurred:", e);
+        // Check if status column exists
+        const tableInfo = await database.executeSql(`PRAGMA table_info(transactions);`);
+        let statusColumnExists = false;
+        for (let i = 0; i < tableInfo[0].rows.length; i++) {
+            if (tableInfo[0].rows.item(i).name === 'status') {
+                statusColumnExists = true;
+                break;
+            }
+        }
+
+        if (!statusColumnExists) {
+            try {
+                await database.executeSql(`ALTER TABLE transactions ADD COLUMN status TEXT DEFAULT 'pending';`);
+                console.log("Migration: Added status column");
+            } catch (e) {
+                console.error("Migration failed:", e);
+            }
         }
 
         // Force all undefined status to pending (for existing data migration)
@@ -149,7 +158,6 @@ export const updateTransaction = async (id: number | string, tx: {
 };
 
 // --- Contacts ---
-
 export const saveContact = async (id: string, name: string) => {
     const database = await getDB();
     await database.executeSql(`INSERT OR REPLACE INTO contacts(id, name) VALUES(?, ?)`, [id, name]);

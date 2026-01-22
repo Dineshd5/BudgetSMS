@@ -6,9 +6,83 @@ export interface ParsedTransaction {
     ref: string;
     date: string;
     balance?: number;
+    senderId?: string; // DLT Sender ID
 }
 
-// Helper to clean amount string and parse float
+// --- DLT / SMS Header Parsing ---
+
+export interface DltHeader {
+    operator: string;
+    circle: string;
+    senderId: string;
+    category: 'Transactional' | 'Service' | 'Promotional' | 'Govt' | 'Unknown';
+    raw: string;
+}
+
+// Map of First Char -> Operator (Consumer info)
+const DLT_OPERATORS: Record<string, string> = {
+    'A': 'Airtel',
+    'B': 'BSNL',
+    'M': 'MTNL',
+    'R': 'Reliance',
+    'V': 'Vodafone/Vi',
+    'J': 'Jio',
+    'I': 'Idea', // Legacy
+    'T': 'Tata', // Legacy
+    'H': 'HFCL',
+    'C': 'Datacom',
+    'D': 'Aircel',
+    'S': 'Sistema',
+    // Add others as needed
+};
+
+// Map of Last Char -> Category
+const DLT_CATEGORIES: Record<string, DltHeader['category']> = {
+    'T': 'Transactional', // OTPs, Alerts
+    'S': 'Service',       // Updates
+    'P': 'Promotional',
+    'G': 'Govt',
+};
+
+export const parseDltHeader = (address: string): DltHeader | null => {
+    // Standard Format: XY-SENDERID-Z (e.g., JX-HDFCBK-T)
+    // Or sometimes just XY-SENDERID (older/mixed)
+    // Clean address
+    const cleanAddr = address.replace(/[^\w-]/g, '').toUpperCase();
+
+    // Regex for Standard DLT: 2 chars (Op+Circle), Dash, SenderID (Header), Dash, 1 Char (Category)
+    // OR Regex for old/simple: 2 chars, Dash, SenderID (6 chars usually)
+
+    // Try Full DLT first: ^([A-Z]{2})-([A-Z0-9]{3,9})-([A-Z])$
+    const fullDltMatch = cleanAddr.match(/^([A-Z]{2})-([A-Z0-9]{3,9})-([A-Z])$/);
+    if (fullDltMatch) {
+        return {
+            operator: DLT_OPERATORS[fullDltMatch[1][0]] || 'Unknown',
+            circle: fullDltMatch[1][1], // Just char code
+            senderId: fullDltMatch[2],
+            category: DLT_CATEGORIES[fullDltMatch[3]] || 'Unknown',
+            raw: address
+        };
+    }
+
+    // Try without category suffix (common variations)
+    const simpleMatch = cleanAddr.match(/^([A-Z]{2})-([A-Z0-9]{3,9})$/);
+    if (simpleMatch) {
+        return {
+            operator: DLT_OPERATORS[simpleMatch[1][0]] || 'Unknown',
+            circle: simpleMatch[1][1],
+            senderId: simpleMatch[2],
+            category: 'Unknown', // Assume safe if parsing explicitly? No, let's treat unknown.
+            raw: address
+        };
+    }
+
+    // Fallback: If it's just a string, treat as SenderID if 6 chars? 
+    // Usually standard SMS comes with hyphen. 
+    return null;
+};
+
+// Start Helper to clean amount string and parse float
 // Helper to clean amount string and parse float
 const parseAmount = (amountStr: string): number => {
     return parseFloat(amountStr.replace(/,/g, ''));
@@ -173,15 +247,46 @@ export const extractDate = (text: string, fallbackTimestamp: number): string => 
     return new Date(fallbackTimestamp).toISOString();
 };
 
-export const parseSms = (body: string, timestamp: number): ParsedTransaction | null => {
+// Use timestamp as fallback for date, and use senderAddress to refine merchant/filtering
+export const parseSms = (body: string, timestamp: number, senderAddress?: string): ParsedTransaction | null => {
+
+    // 1. DLT Header Logic (if address provided)
+    let dltInfo: DltHeader | null = null;
+    if (senderAddress) {
+        dltInfo = parseDltHeader(senderAddress);
+
+        // FILTER: Ignore Promotional (P) messages immediately
+        // User asked to "ignore span messages", "P" is definitely promotional.
+        if (dltInfo && dltInfo.category === 'Promotional') {
+            console.log(`Skipping Promotional SMS: ${senderAddress}`);
+            return null;
+        }
+    }
+
     const amount = extractAmount(body);
-    if (!amount) return null; // Not a transactional SMS
+    if (!amount) return null; // Not a transactional SMS (requires amount)
 
     const type = extractType(body);
     // Ignore internal parsing logic errors for now, rely on robust fallbacks
 
-    const merchant = extractMerchant(body, type);
+    // Merchant Extraction Priority:
+    // 1. UPI ID in body (most accurate)
+    // 2. Extracted "at X" / "from Y" in body
+    // 3. DLT SenderID (e.g., HDFCBK)
+
+    let merchant = extractMerchant(body, type);
+
+    // If merchant finding failed or returned generic "Unknown Entity", try DLT SenderID
+    if ((merchant === "Unknown Entity" || merchant === "Unknown") && dltInfo) {
+        merchant = dltInfo.senderId;
+    }
+
     const category = assignCategory(body, merchant);
+
+    // Refine Category using DLT SenderID if generic 'General' was assigned
+    // E.g. if merchant came from DLT, we might know it's a Bank => Transfers/General
+    // (Existing assignCategory covers some keywords, we can expand it later if needed)
+
     const ref = extractReferenceId(body) || `${timestamp}-${amount}`; // Fallback unique ID
     const date = extractDate(body, timestamp);
 
@@ -192,5 +297,6 @@ export const parseSms = (body: string, timestamp: number): ParsedTransaction | n
         merchant,
         ref,
         date: date,
+        senderId: dltInfo?.senderId
     };
 };

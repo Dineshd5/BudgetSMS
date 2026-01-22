@@ -241,24 +241,43 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
 
                         for (const sms of smsArray) {
                             // ROBUST HEADER FILTER
-                            // Check against known bank keywords
-                            const sender = sms.address.toLowerCase();
+                            // Check against known bank keywords OR new DLT logic
+                            const sender = sms.address; // Case sensitive for DLT
                             let detectedBank = null;
 
+                            // 1. Check Legacy/Hardcoded Bank Keywords
+                            const senderLower = sender.toLowerCase();
                             for (const [bank, keywords] of Object.entries(BANK_KEYWORDS)) {
-                                if (keywords.some(k => sender.includes(k))) {
+                                if (keywords.some(k => senderLower.includes(k))) {
                                     detectedBank = bank;
                                     break;
                                 }
                             }
 
-                            if (!detectedBank) continue;
+                            // 2. Check DLT Header (New Logic)
+                            // We import parseDltHeader locally to avoid importing if not used, 
+                            // actually it is better to rely on what parseSms does, 
+                            // BUT we need to skip the loop early if it is junk.
+
+                            // Let's rely on parseSms to do the heavy lifting, but we need a broad filter first.
+                            // If it is NOT a known bank AND NOT a DLT header, we skip.
+
+                            // We need to import parseDltHeader. 
+                            // Since I cannot easily add top-level imports with replace_file_content if I am only replacing a chunk,
+                            // I will rely on the fact that parseSms now handles the DLT parsing logic internally.
+                            // HOWEVER, this loop `if (!detectedBank) continue;` prevents parseSms from even running.
+                            // So I MUST relax this check.
+
+                            // Quick fix: Check if it looks like a DLT header (XY-AAAAAA)
+                            const isLikelyDlt = /^[A-Z]{2}-[A-Z0-9]{3,9}(-[A-Z])?$/i.test(sender);
+
+                            if (!detectedBank && !isLikelyDlt) continue;
 
                             // SPAM FILTER
                             const spamKeywords = /otp|code|auth|login|verification|won|prize|lottery|expire|cyber|loan|block|casino|rummy/i;
                             if (spamKeywords.test(sms.body)) continue;
 
-                            const parsed = parseSms(sms.body, sms.date);
+                            const parsed = parseSms(sms.body, sms.date, sms.address);
                             if (!parsed) continue;
 
                             // Insert into DB with pending status
@@ -267,7 +286,7 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
                                 amount: parsed.amount,
                                 type: parsed.type,
                                 mode: parsed.category,
-                                merchant: parsed.merchant || detectedBank, // Fallback to bank name if merchant unknown
+                                merchant: parsed.merchant || detectedBank || "Unknown", // Fallback to bank name if merchant unknown
                                 ref: sms._id.toString(),
                                 timestamp: parsed.date,
                                 status: 'pending',
