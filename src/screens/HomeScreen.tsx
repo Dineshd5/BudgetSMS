@@ -185,9 +185,14 @@ export default function HomeScreen() {
                     </View>
                 )}
 
-                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                    Recent Transactions
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text, marginBottom: 0 }]}>
+                        Recent Transactions
+                    </Text>
+                    <Text style={{ fontSize: 10, color: theme.colors.textSecondary, fontStyle: 'italic' }}>
+                        Long press to edit
+                    </Text>
+                </View>
 
                 {/* Search Bar */}
                 <View style={[styles.searchContainer, { backgroundColor: isDark ? '#2a2a2a' : '#f5f5f5' }]}>
@@ -225,18 +230,18 @@ export default function HomeScreen() {
                                 ]}
                             >
                                 <View style={styles.row}>
-                                    <View>
+                                    <View style={{ flex: 1 }}>
                                         <Text style={[styles.amount, { color: isDebit ? theme.colors.expense : theme.colors.income }]}>
                                             {isDebit ? "-" : "+"}₹{tx.amount.toLocaleString()}
                                         </Text>
                                         <Text style={[styles.date, { color: theme.colors.textSecondary }]}>{new Date(tx.date).toLocaleDateString()}</Text>
                                     </View>
-                                    <View style={{ alignItems: 'flex-end' }}>
+                                    <View style={{ alignItems: 'flex-end', flex: 1, marginLeft: 10 }}>
                                         <Text style={[styles.type, { color: isDebit ? theme.colors.expense : theme.colors.income }]}>
                                             {isDebit ? "DEBIT" : "CREDIT"}
                                         </Text>
-                                        <Text style={[styles.source, { color: theme.colors.text }]}>{tx.source || "Unknown"}</Text>
-                                        <Text style={[styles.category, { color: theme.colors.textSecondary }]}>{tx.category}</Text>
+                                        <Text numberOfLines={1} style={[styles.source, { color: theme.colors.text }]}>{tx.source || "Unknown"}</Text>
+                                        <Text numberOfLines={1} style={[styles.category, { color: theme.colors.textSecondary }]}>{tx.category}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -331,7 +336,7 @@ const styles = StyleSheet.create({
     amount: { fontSize: 18, fontWeight: "bold" },
     date: { fontSize: 12, marginTop: 4 },
     type: { fontSize: 10, fontWeight: 'bold', marginBottom: 2 },
-    source: { marginTop: 4, fontWeight: '600', fontSize: 14, width: 150, textAlign: "right" },
+    source: { marginTop: 4, fontWeight: '600', fontSize: 14, textAlign: "right" },
     category: { fontSize: 12, marginTop: 2 },
 
     fab: {
